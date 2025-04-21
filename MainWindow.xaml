@@ -1,0 +1,94 @@
+﻿<Window x:Class="ComtradeParser.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:oxy="http://oxyplot.org/wpf"
+        xmlns:local="clr-namespace:ComtradeParser"
+        mc:Ignorable="d"
+        Title="MainWindow"
+        Height="450"
+        Width="800">
+    <Window.DataContext>
+        <local:ParserCOMTRADE />
+    </Window.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="100" />
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center">
+            <Button Command="{Binding StartReadSignal}"
+                    Content="Считать осциллограмму"
+                    Margin="10"
+                    Height="30"
+                    Width="150" />
+            <Button Command="{Binding StartFourieAnalize}"
+                    Content="Сделать анализ Фурье"
+                    Margin="10"
+                    Height="30"
+                    Width="150" />
+            <Button Command="{Binding DistanseAnalize}"
+                    Content="Вычислить расстояние до КЗ"
+                    Margin="10"
+                    Height="30"
+                    Width="150" />
+            <Button Command="{Binding ViewOfShortCurrentAnalize}"
+                    Content="Вычислить вид КЗ"
+                    Margin="10"
+                    Height="30"
+                    Width="150" />
+        </StackPanel>
+        <ScrollViewer  >
+            <ItemsControl  Margin="5"
+                           ItemsSource="{Binding ChartModels}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <ContentControl MinHeight="250"
+                                        MaxHeight="500"
+                                        Margin="10"
+                                        DataContext="{Binding}">
+                            <oxy:PlotView  Model="{Binding}" />
+                        </ContentControl>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+        <StackPanel Grid.Row="4">
+            <ComboBox 
+                      ItemsSource="{Binding SignalNames}"
+                      Text="My Signals"
+                      IsEditable="true"
+                      IsReadOnly="true"
+                      SelectedValue="{Binding SignalAName}"/>
+        </StackPanel>
+        <StackPanel Grid.Row="3">
+            <TextBox Text="{Binding ActiveResistance}"
+                     Grid.Row="3"
+                     Height="20"
+                     Width="200" />
+            <TextBlock Text="Активное, Ом/км"
+                       Height="20"
+                       Width="200" />
+            <TextBox Text="{Binding ReactiveResistance}"
+                     Grid.Row="3"
+                     Height="20"
+                     Width="200" />
+            <TextBlock Text="Реактивное, Ом/км"
+                       Height="20"
+                       Width="200" />
+            <TextBox Text="{Binding Distanse}"
+                     Grid.Row="3"
+                     Height="20"
+                     Width="200" />
+            <TextBlock Text="Расстояние, км"
+                       Height="20"
+                       Width="200" />
+        </StackPanel>
+    </Grid>
+</Window>
