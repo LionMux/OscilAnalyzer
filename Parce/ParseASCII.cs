@@ -1,4 +1,7 @@
-﻿namespace COMTRADE_parser.Parce
+﻿
+using System.IO;
+
+namespace COMTRADE_parser.Parce
 
 {
     public class AsciiDatParser : IDatParser

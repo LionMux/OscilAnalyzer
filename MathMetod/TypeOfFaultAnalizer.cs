@@ -1,11 +1,6 @@
-﻿using COMTRADE_parser.SelectSignal;
+﻿
 using ComtradeParser;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace COMTRADE_parser.MathMetod
 {
@@ -22,8 +17,8 @@ namespace COMTRADE_parser.MathMetod
         private bool _kbc11;
         private bool _kca11;
 
-        private FourieAnalizer fourieAnalizer_I;
-        private FourieAnalizer fourieAnalizer_U;
+        private FourieAnalizer _fourieAnalizer_I;
+        private FourieAnalizer _fourieAnalizer_U;
 
         private Complex[] current_A;
         private Complex[] current_B;
@@ -48,8 +43,8 @@ namespace COMTRADE_parser.MathMetod
             _kbc11 = false;
             _kca11 = false;
 
-            this.fourieAnalizer_I = fourieAnalizer_I;
-            this.fourieAnalizer_U = fourieAnalizer_U;
+            _fourieAnalizer_I = fourieAnalizer_I;
+            _fourieAnalizer_U = fourieAnalizer_U;
 
             current_A = fourieAnalizer_I.fourie_A;
             current_B = fourieAnalizer_I.fourie_B;
@@ -63,49 +58,14 @@ namespace COMTRADE_parser.MathMetod
 
         public void StartFaultAnalize()
         {
-            for (int i = 0; i < fourieAnalizer_I.Pramaya.Length; i++)
+            for (int i = 0; i < _fourieAnalizer_I.Pramaya.Length; i++)
             {
-                if ((fourieAnalizer_I.Nulevaya[i].Magnitude / fourieAnalizer_I.Obratnaya[i].Magnitude) < 0.1)
+                if ((_fourieAnalizer_I.Nulevaya[i].Magnitude / _fourieAnalizer_I.Obratnaya[i].Magnitude) < 0.1)
                 {
                     TESTFLT2P(i);
                     TESTFLT3P(i);
                 }
-                if ( (fourieAnalizer_U.Pramaya[i] / fourieAnalizer_I.Pramaya[i]).Phase > (-60 * Math.PI / 180) &&
-                    (fourieAnalizer_U.Pramaya[i] / fourieAnalizer_I.Pramaya[i]).Phase < (60 * Math.PI / 180))
-                {
-                    if (2 * z_A[i].Magnitude > z_B[i].Magnitude && 2 * z_A[i].Magnitude > z_C[i].Magnitude)
-                    {
-                        _ka1 = true;
-                    }
-                    if (0.5 * z_A[i].Magnitude > z_B[i].Magnitude && 0.5 * z_A[i].Magnitude > z_C[i].Magnitude)
-                    {
-                        _kbc11 = true;
-                    }
-                }
-                else if ((fourieAnalizer_U.Pramaya[i] / fourieAnalizer_I.Pramaya[i]).Phase > (60 * Math.PI / 180) &&
-                    (fourieAnalizer_U.Pramaya[i] / fourieAnalizer_I.Pramaya[i]).Phase < (180 * Math.PI / 180))
-                {
-                    if (2 * z_C[i].Magnitude > z_A[i].Magnitude && 2 * z_C[i].Magnitude > z_B[i].Magnitude)
-                    {
-                        _kc1 = true;
-                    }
-                    if (0.5 * z_C[i].Magnitude > z_A[i].Magnitude && 0.5 * z_C[i].Magnitude > z_B[i].Magnitude)
-                    {
-                        _kab11 = true;
-                    }
-                }
-                else if ((fourieAnalizer_U.Pramaya[i] / fourieAnalizer_I.Pramaya[i]).Phase > (-180 * Math.PI / 180) &&
-                    (fourieAnalizer_U.Pramaya[i] / fourieAnalizer_I.Pramaya[i]).Phase < (-60 * Math.PI / 180))
-                {
-                    if (2 * z_B[i].Magnitude > z_A[i].Magnitude && 2 * z_B[i].Magnitude > z_C[i].Magnitude)
-                    {
-                        _kb1 = true;
-                    }
-                    if (0.5 * z_B[i].Magnitude > z_A[i].Magnitude && 0.5 * z_B[i].Magnitude > z_C[i].Magnitude)
-                    {
-                        _kca11 = true;
-                    }
-                }
+                TESTFLTOnGround(i);
             }
         }
 
@@ -113,9 +73,9 @@ namespace COMTRADE_parser.MathMetod
         {
             for (int i = 0; i < current_A.Length; i++)
             {
-                z_A[i] = current_A[i] / voltage_A[i];
-                z_B[i] = current_B[i] / voltage_B[i];
-                z_C[i] = current_C[i] / voltage_C[i];
+                z_A[i] = voltage_A[i] / current_A[i];
+                z_B[i] = voltage_B[i] / current_B[i];
+                z_C[i] = voltage_C[i] / current_C[i];
             }
         }
 
@@ -138,12 +98,51 @@ namespace COMTRADE_parser.MathMetod
         public void TESTFLT3P(int i)
         {
 
-            if ( (fourieAnalizer_I.Nulevaya[i].Magnitude / fourieAnalizer_I.Obratnaya[i].Magnitude) < 0.1 &&
-                Math.Abs( (fourieAnalizer_U.Pramaya[i] / fourieAnalizer_I.Pramaya[i] ).Phase) > ( 30 * Math.PI / 180) )
+            if ((_fourieAnalizer_I.Nulevaya[i].Magnitude / _fourieAnalizer_I.Obratnaya[i].Magnitude) < 0.1 &&
+                Math.Abs((_fourieAnalizer_U.Pramaya[i] / _fourieAnalizer_I.Pramaya[i]).Phase) > (30 * Math.PI / 180))
             {
                 _k3 = true;
             }
 
+        }
+        public void TESTFLTOnGround(int i)
+        {
+            if ((_fourieAnalizer_U.Pramaya[i] / _fourieAnalizer_I.Pramaya[i]).Phase > (-60 * Math.PI / 180) &&
+                    (_fourieAnalizer_U.Pramaya[i] / _fourieAnalizer_I.Pramaya[i]).Phase < (60 * Math.PI / 180))
+            {
+                if (2 * z_A[i].Magnitude > z_B[i].Magnitude && 2 * z_A[i].Magnitude > z_C[i].Magnitude)
+                {
+                    _ka1 = true;
+                }
+                if (0.5 * z_A[i].Magnitude > z_B[i].Magnitude && 0.5 * z_A[i].Magnitude > z_C[i].Magnitude)
+                {
+                    _kbc11 = true;
+                }
+            }
+            else if ((_fourieAnalizer_U.Pramaya[i] / _fourieAnalizer_I.Pramaya[i]).Phase > (60 * Math.PI / 180) &&
+                (_fourieAnalizer_U.Pramaya[i] / _fourieAnalizer_I.Pramaya[i]).Phase < (180 * Math.PI / 180))
+            {
+                if (2 * z_C[i].Magnitude > z_A[i].Magnitude && 2 * z_C[i].Magnitude > z_B[i].Magnitude)
+                {
+                    _kc1 = true;
+                }
+                if (0.5 * z_C[i].Magnitude > z_A[i].Magnitude && 0.5 * z_C[i].Magnitude > z_B[i].Magnitude)
+                {
+                    _kab11 = true;
+                }
+            }
+            else if ((_fourieAnalizer_U.Pramaya[i] / _fourieAnalizer_I.Pramaya[i]).Phase > (-180 * Math.PI / 180) &&
+                (_fourieAnalizer_U.Pramaya[i] / _fourieAnalizer_I.Pramaya[i]).Phase < (-60 * Math.PI / 180))
+            {
+                if (2 * z_B[i].Magnitude > z_A[i].Magnitude && 2 * z_B[i].Magnitude > z_C[i].Magnitude)
+                {
+                    _kb1 = true;
+                }
+                if (0.5 * z_B[i].Magnitude > z_A[i].Magnitude && 0.5 * z_B[i].Magnitude > z_C[i].Magnitude)
+                {
+                    _kca11 = true;
+                }
+            }
         }
     }
 }

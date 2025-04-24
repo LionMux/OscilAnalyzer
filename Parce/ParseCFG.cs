@@ -1,6 +1,7 @@
 ﻿
 using COMTRADE_parser;
 using System.Globalization;
+using System.IO;
 
 class ParseCFG
 {
