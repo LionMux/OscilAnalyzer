@@ -20,5 +20,7 @@ namespace OscilAnalyzer
         {
             InitializeComponent();
         }
+
+     
     }
 }

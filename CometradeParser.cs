@@ -7,6 +7,7 @@ using ScottPlot.WPF;
 using System.Collections.ObjectModel;
 using System;
 using COMTRADE_parser;
+using Prism.Mvvm;
 
 namespace OscilAnalyzer
 {
@@ -22,37 +23,32 @@ namespace OscilAnalyzer
         private List<string> _signalNames;
         private double _numOfPoints;
 
+        public DelegateCommand StartRead { get; set; }
+
         private string _cfgFileName = "Files\\25_newRTDS.cfg";
         private string _datFileName = "Files\\25_newRTDS.dat";
 
         Reader reader;
         List<AnalogChannelConfig> _analogChanells;
 
-
-        public List<double> CurrentA { get => _currentA; set => SetProperty(ref _currentA, value); }
-        public List<double> CurrentB { get => _currentB; set => SetProperty(ref _currentB, value); }
-        public List<double> CurrentC { get => _currentC; set => SetProperty(ref _currentC, value); }
-        public List<double> VoltageA { get => _voltageA; set => SetProperty(ref _voltageA, value); }
-        public List<double> VoltageB { get => _voltageB; set => SetProperty(ref _voltageB, value); }
-        public List<double> VoltageC { get => _voltageC; set => SetProperty(ref _voltageC, value); }
-        public List<double> TimeValues { get => _timeValues; set => SetProperty(ref _timeValues, value); }
         public List<string> SignalNames { get => _signalNames; set => SetProperty(ref _signalNames, value); }
 
         public CometradeParser()
         {
-            
+            SignalNames = new List<string>();
+            StartRead = new DelegateCommand(ReadSignal, CanReadSignal);
         }
 
         public void ReadSignal()
         {
             int j = 0;
-            CurrentA = new List<double>();
-            CurrentB = new List<double>();
-            CurrentC = new List<double>();
-            VoltageA = new List<double>();
-            VoltageB = new List<double>();
-            VoltageC = new List<double>();
-            TimeValues = new List<double>();
+            _currentA = new List<double>();
+            _currentB = new List<double>();
+            _currentC = new List<double>();
+            _voltageA = new List<double>();
+            _voltageB = new List<double>();
+            _voltageC = new List<double>();
+            _timeValues = new List<double>();
 
             Reader reader = new Reader(_cfgFileName, _datFileName);
             _analogChanells = reader.Config.AnalogChannels;
@@ -66,31 +62,59 @@ namespace OscilAnalyzer
             _voltageB.Clear();
             _voltageC.Clear();
             _timeValues.Clear();
-            ScottPlotControls.Clear();
-            ScottPlots.Clear();
+            //ScottPlotControls.Clear();
+            //ScottPlots.Clear();
 
             //заполнение фаз токов и напряжений
-
-            foreach (var sample in reader.AnalogData)
+            foreach (var signalName in SignalNames)
             {
-                for (int i = 0; i < reader.Config.AnalogChannelsCount; i++)
+                int index = _analogChanells.FindIndex(x => x.Name == signalName);
+                if (index >= 0)
                 {
-                    if (SignalNames[j] == _analogChanells[i].Name)
+                    foreach (var sample in reader.AnalogData)
                     {
-                        SignalName[j]
+                        if(_timeValues.Count != reader.AnalogData.Count)
+                        switch (index)
+                        {
+                            case 1:
+                                _currentA.Add(sample[index]);
+                                break;
+                            case 2:
+                                _currentB.Add(sample[index]);
+                                break;
+                            case 3:
+                                _currentC.Add(sample[index]);
+                                break;
+                            case 4:
+                                _voltageA.Add(sample[index]);
+                                break;
+                            case 5:
+                                _voltageB.Add(sample[index]);
+                                break;
+                            case 6:
+                                _voltageC.Add(sample[index]);
+                                break;
+                        }
                     }
                 }
             }
-
+            // Перевод из микросек. в миллисек.
+            for (int i = 0; i < reader.DatTime.Count; i++)
+            {
+                _timeValues[i] = reader.DatTime[i]/1000;
+            }
         }
-    }
-    public enum SignalName
-    {
-        _currentA = 0,
-        _currentB = 1,
-        _currentC = 2,
-        _voltageA = 3,
-        _voltageB = 4,
-        _voltageC = 5
+
+        private bool CanReadSignal()
+        {
+            if (SignalNames.Count < 6)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
     }
 }

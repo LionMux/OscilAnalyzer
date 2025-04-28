@@ -10,6 +10,7 @@ namespace COMTRADE_parser
     {
         List<List<double>> ParseAnalogData(string filePath, ComtradeConfig config);
         List<List<bool>> ParseDiscreteData(string filePath, ComtradeConfig config);
+        List<double> DatTime { get;}
     }
 
     //public interface IDataExporter

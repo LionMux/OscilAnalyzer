@@ -6,7 +6,65 @@
         xmlns:local="clr-namespace:OscilAnalyzer"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
+    <Window.DataContext>
+        <local:CometradeParser />
+    </Window.DataContext>
+    <Grid ShowGridLines="True">
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+                    Height="30"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center">
+            <Button Content="Считать осциллограмму" Command ="{Binding StartRead}" />
+
+
+
+
+
+        </StackPanel>
+        <StackPanel Grid.Row="3"
+                    Height="30"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Left"
+                    Margin="10">
+            <ComboBox
+                ItemsSource="{Binding SignalNames}"
+                Text="IA"
+                IsEditable="True"
+                IsReadOnly="True"
+                SelectedValue="{Binding SignalNames}"
+                Margin="30"/>
+            <ComboBox
+               ItemsSource="{Binding SignalNames}"
+               Text="IB"
+               IsEditable="True"
+               IsReadOnly="True"
+               SelectedValue="{Binding SignalNames}"
+               Margin="30"/>
+            
+
+
+
+
+        </StackPanel>
 
     </Grid>
 </Window>
+<!--<StackPanel VerticalAlignment="Center">
+
+            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="{Binding Count}" Margin="20"/>
+            <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20"/>
+            <TextBox Text="test" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20"  Margin="20"/>
+            <CheckBox Content="update" IsChecked="{Binding UpdateEnable}"/>
+            <Button Content="do" Width="70" Command="{Binding DoCommand}" />
+        </StackPanel>-->

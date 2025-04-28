@@ -6,15 +6,20 @@ namespace COMTRADE_parser.Parce
 {
     public class AsciiDatParser : IDatParser
     {
+        private List<double> _datTime;
+        public List<double> DatTime { get => _datTime;}
+
         public List<List<double>> ParseAnalogData(string filePath, ComtradeConfig config)
         {
             var analogData = new List<List<double>>();
+            var DatTime = new List<double>();
             var lines = File.ReadAllLines(filePath);
 
             foreach (var line in lines)
             {
                 var sample = new List<double>();
                 var parts = line.Split(',');
+                DatTime.Add(double.Parse(parts[1]));
 
                 for (int i = 0; i < config.AnalogChannelsCount; i++)
                 {
