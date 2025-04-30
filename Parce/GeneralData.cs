@@ -1,4 +1,4 @@
-﻿namespace COMTRADE_parser
+﻿namespace OscilAnalyzer.Parce
 {
     using System.Collections.Generic;
 
@@ -11,7 +11,7 @@
         public DataFileType Encoding { get; set; }
         public double LineFrequency { get; set; }
         public double Rate { get; set; }
-        public long EndSample {  get; set; }
+        public long EndSample { get; set; }
         public List<AnalogChannelConfig> AnalogChannels { get; } = new List<AnalogChannelConfig>();
         public List<DiscreteChannelConfig> DiscreteChannels { get; } = new List<DiscreteChannelConfig>();
     }

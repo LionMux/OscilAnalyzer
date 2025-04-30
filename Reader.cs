@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using COMTRADE_parser.Parce;
+using OscilAnalyzer.Parce;
 using static ParseCFG;
 
 namespace COMTRADE_parser

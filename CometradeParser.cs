@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System;
 using COMTRADE_parser;
 using Prism.Mvvm;
+using OscilAnalyzer.Parce;
 
 namespace OscilAnalyzer
 {
@@ -29,6 +30,8 @@ namespace OscilAnalyzer
         private string _voltageBName;
         private string _voltageCName;
         private double _numOfPoints;
+
+        public WpfPlot PlotControl { get; set; }
 
         public DelegateCommand StartRead { get; set; }
         public DelegateCommand SelectSignal { get; set; }
@@ -55,7 +58,7 @@ namespace OscilAnalyzer
             SignalALLNames = new List<string>();
             SignalNames = new List<string>();
             StartRead = new DelegateCommand(ReadSignal);
-            SelectSignal = new DelegateCommand(SelectPhaseSignal, CanReadSignal);
+            SelectSignal = new DelegateCommand(SelectPhaseSignal, CanReadSelectSignal);
         }
 
         public void ReadSignal()
@@ -134,8 +137,22 @@ namespace OscilAnalyzer
                 }
                 j++;
             }
+            if (PlotControl != null && _currentA.Count > 0)
+            {
+                var plt = PlotControl.Plot;
+                plt.Clear();
+                double[] ys = _currentA.ToArray();
+                double[] xs = Enumerable.Range(0, ys.Length).Select(i => (double)i).ToArray();
+
+                plt.AddScatter(xs, ys, label: "Ток A");
+                plt.Title("График тока A");
+                plt.XLabel("Точка");
+                plt.YLabel("Амплитуда");
+
+                PlotControl.Refresh();
+            }
         }
-        private bool CanReadSignal()
+        private bool CanReadSelectSignal()
         {
             return !string.IsNullOrEmpty(CurrentAName)
             && !string.IsNullOrEmpty(CurrentBName)
