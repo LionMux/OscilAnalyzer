@@ -75,10 +75,10 @@ class ParseCFG
         {
             string line = lines[lines.Length-5].Trim();
             config.LineFrequency = double.Parse(line, CultureInfo.InvariantCulture);
-            string[] line1 = lines[lines.Length-3].Trim().Split(",");
+            string[] line1 = lines[lines.Length-4].Trim().Split(",");
             config.Rate = double.Parse(line1[0], CultureInfo.InvariantCulture);
             config.EndSample = long.Parse(line1[1], CultureInfo.InvariantCulture);
-            config.Encoding = lines[lines.Length].Trim().Equals("ASCII", StringComparison.OrdinalIgnoreCase)
+            config.Encoding = lines[lines.Length-1].Trim().Equals("ASCII", StringComparison.OrdinalIgnoreCase)
                 ? DataFileType.ASCII
                 : DataFileType.Binary;
         }

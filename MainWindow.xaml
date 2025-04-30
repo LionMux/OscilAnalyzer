@@ -22,42 +22,61 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
-                    Height="30"
+                    Height="50"
                     Orientation="Horizontal"
                     HorizontalAlignment="Center">
-            <Button Content="Считать осциллограмму" Command ="{Binding StartRead}" />
-
-
-
-
+            <Button Command ="{Binding StartRead}"
+                    Content="Считать осциллограмму" 
+                    Margin="10"
+                    Height="30"
+                    Width="auto"/>
+            <Button Command ="{Binding SelectSignal}"
+                    Content="Применить выбранные сигналы" 
+                    Margin="10"
+                    Height="30"
+                    Width="auto"/>
 
         </StackPanel>
         <StackPanel Grid.Row="3"
-                    Height="30"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Left"
-                    Margin="10">
-            <ComboBox
-                ItemsSource="{Binding SignalNames}"
-                Text="IA"
-                IsEditable="True"
-                IsReadOnly="True"
-                SelectedValue="{Binding SignalNames}"
-                Margin="30"/>
-            <ComboBox
-               ItemsSource="{Binding SignalNames}"
-               Text="IB"
-               IsEditable="True"
-               IsReadOnly="True"
-               SelectedValue="{Binding SignalNames}"
-               Margin="30"/>
-            
-
-
-
-
+            Grid.ColumnSpan="2"
+            Orientation="Horizontal"
+            HorizontalAlignment="Center"
+            Margin="20">
+            <StackPanel Orientation="Vertical" Margin="20">
+                <TextBlock Text="Current" FontWeight="Bold" HorizontalAlignment="Center"/>
+                <ComboBox ItemsSource="{Binding SignalALLNames}"
+                  Text="IA"
+                  IsEditable="True"    
+                  SelectedItem="{Binding CurrentAName,Mode=TwoWay}" />
+                <ComboBox ItemsSource="{Binding SignalALLNames}"
+                  Text="IB"
+                  IsEditable="True"
+                  SelectedItem="{Binding CurrentBName,Mode=TwoWay}" />
+                <ComboBox ItemsSource="{Binding SignalALLNames}"
+                  Text="IC"
+                  IsEditable="True"
+                  IsReadOnly="True"
+                  SelectedItem="{Binding CurrentCName,Mode=TwoWay}" />
+            </StackPanel>
+            <StackPanel Orientation="Vertical" Margin="20">
+                <TextBlock Text="Voltage" FontWeight="Bold" HorizontalAlignment="Center"/>
+                <ComboBox ItemsSource="{Binding SignalALLNames}"
+                  Text="UA"
+                  IsEditable="True"
+                  IsReadOnly="True"
+                  SelectedItem="{Binding VoltageAName,Mode=TwoWay}" />
+                <ComboBox ItemsSource="{Binding SignalALLNames}"
+                  Text="UB"
+                  IsEditable="True"
+                  IsReadOnly="True"
+                  SelectedItem="{Binding VoltageBName,Mode=TwoWay}"/>
+                <ComboBox ItemsSource="{Binding SignalALLNames}"
+                  Text="UC"
+                  IsEditable="True"
+                  IsReadOnly="True"
+                  SelectedItem="{Binding VoltageCName,Mode=TwoWay}" />
+            </StackPanel>
         </StackPanel>
-
     </Grid>
 </Window>
 <!--<StackPanel VerticalAlignment="Center">

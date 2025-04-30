@@ -11,7 +11,7 @@ using Prism.Mvvm;
 
 namespace OscilAnalyzer
 {
-    internal class CometradeParser: BindableBase
+    internal class CometradeParser : BindableBase
     {
         private List<double> _currentA;
         private List<double> _currentB;
@@ -20,28 +20,46 @@ namespace OscilAnalyzer
         private List<double> _voltageB;
         private List<double> _voltageC;
         private List<double> _timeValues;
+        private List<string> _signalALLNames;
         private List<string> _signalNames;
+        private string _currentAName;
+        private string _currentBName;
+        private string _currentCName;
+        private string _voltageAName;
+        private string _voltageBName;
+        private string _voltageCName;
         private double _numOfPoints;
 
         public DelegateCommand StartRead { get; set; }
+        public DelegateCommand SelectSignal { get; set; }
 
-        private string _cfgFileName = "Files\\25_newRTDS.cfg";
-        private string _datFileName = "Files\\25_newRTDS.dat";
+        private string _cfgFileName = "C:\\Users\\muhac\\Desktop\\Diplom\\Files\\25_newRTDS.cfg";
+        private string _datFileName = "C:\\Users\\muhac\\Desktop\\Diplom\\Files\\25_newRTDS.dat";
 
         Reader reader;
         List<AnalogChannelConfig> _analogChanells;
 
-        public List<string> SignalNames { get => _signalNames; set => SetProperty(ref _signalNames, value); }
+        public List<string> SignalALLNames { get => _signalALLNames; set => SetProperty(ref _signalALLNames, value); }
+        public string CurrentAName { get => _currentAName; 
+            set => UpdateSignal(ref _currentAName, value); }
+        public string CurrentBName { get => _currentBName; set => UpdateSignal(ref _currentBName, value); }
+        public string CurrentCName { get => _currentCName; set => UpdateSignal(ref _currentCName, value); }
+        public string VoltageAName { get => _voltageAName; set => UpdateSignal(ref _voltageAName, value); }
+        public string VoltageBName { get => _voltageBName; set => UpdateSignal(ref _voltageBName, value); }
+        public string VoltageCName { get => _voltageCName; set => UpdateSignal(ref _voltageCName, value); }
+        public double NumOfPoints { get => _numOfPoints; set => _numOfPoints = value; }
+        public List<string> SignalNames { get => _signalNames; set => _signalNames = value; }
 
         public CometradeParser()
         {
+            SignalALLNames = new List<string>();
             SignalNames = new List<string>();
-            StartRead = new DelegateCommand(ReadSignal, CanReadSignal);
+            StartRead = new DelegateCommand(ReadSignal);
+            SelectSignal = new DelegateCommand(SelectPhaseSignal, CanReadSignal);
         }
 
         public void ReadSignal()
         {
-            int j = 0;
             _currentA = new List<double>();
             _currentB = new List<double>();
             _currentC = new List<double>();
@@ -50,9 +68,9 @@ namespace OscilAnalyzer
             _voltageC = new List<double>();
             _timeValues = new List<double>();
 
-            Reader reader = new Reader(_cfgFileName, _datFileName);
+            reader = new Reader(_cfgFileName, _datFileName);
             _analogChanells = reader.Config.AnalogChannels;
-            SignalNames = _analogChanells.Select(x => x.Name).ToList();
+            SignalALLNames = _analogChanells.Select(x => x.Name).ToList();
 
             // Очистка старых данных
             _currentA.Clear();
@@ -64,57 +82,72 @@ namespace OscilAnalyzer
             _timeValues.Clear();
             //ScottPlotControls.Clear();
             //ScottPlots.Clear();
-
+            // Перевод из микросек. в миллисек.
+            //for (int i = 0; i < reader.DatTime.Count; i++)
+            //{
+            //    _timeValues[i] = reader.DatTime[i]/1000;
+            //}
+        }
+        public void SelectPhaseSignal()
+        {
+            int j = 1;
+            if (reader != null)
+            {
+                SignalNames.Add(CurrentAName);
+                SignalNames.Add(CurrentBName);
+                SignalNames.Add(CurrentCName);
+                SignalNames.Add(VoltageAName);
+                SignalNames.Add(VoltageBName);
+                SignalNames.Add(VoltageCName);
+            }
             //заполнение фаз токов и напряжений
             foreach (var signalName in SignalNames)
             {
+
                 int index = _analogChanells.FindIndex(x => x.Name == signalName);
-                if (index >= 0)
+                if (SignalALLNames.Count > 0)
                 {
                     foreach (var sample in reader.AnalogData)
                     {
-                        if(_timeValues.Count != reader.AnalogData.Count)
-                        switch (index)
-                        {
-                            case 1:
-                                _currentA.Add(sample[index]);
-                                break;
-                            case 2:
-                                _currentB.Add(sample[index]);
-                                break;
-                            case 3:
-                                _currentC.Add(sample[index]);
-                                break;
-                            case 4:
-                                _voltageA.Add(sample[index]);
-                                break;
-                            case 5:
-                                _voltageB.Add(sample[index]);
-                                break;
-                            case 6:
-                                _voltageC.Add(sample[index]);
-                                break;
-                        }
+                            switch (j)
+                            {
+                                case 1:
+                                    _currentA.Add(sample[index]);
+                                    break;
+                                case 2:
+                                    _currentB.Add(sample[index]);
+                                    break;
+                                case 3:
+                                    _currentC.Add(sample[index]);
+                                    break;
+                                case 4:
+                                    _voltageA.Add(sample[index]);
+                                    break;
+                                case 5:
+                                    _voltageB.Add(sample[index]);
+                                    break;
+                                case 6:
+                                    _voltageC.Add(sample[index]);
+                                    break;
+                            }
                     }
                 }
-            }
-            // Перевод из микросек. в миллисек.
-            for (int i = 0; i < reader.DatTime.Count; i++)
-            {
-                _timeValues[i] = reader.DatTime[i]/1000;
+                j++;
             }
         }
-
         private bool CanReadSignal()
         {
-            if (SignalNames.Count < 6)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
+            return !string.IsNullOrEmpty(CurrentAName)
+            && !string.IsNullOrEmpty(CurrentBName)
+            && !string.IsNullOrEmpty(CurrentCName)
+            && !string.IsNullOrEmpty(VoltageAName)
+            && !string.IsNullOrEmpty(VoltageBName)
+            && !string.IsNullOrEmpty(VoltageCName);
+        }
+        private void UpdateSignal(ref string field, string newValue)
+        {
+            SetProperty(ref field, newValue);
+            SelectSignal.RaiseCanExecuteChanged();
         }
     }
 }
