@@ -12,7 +12,7 @@ using OscilAnalyzer.Parce;
 
 namespace OscilAnalyzer
 {
-    internal class CometradeParser : BindableBase
+    public class CometradeParser : BindableBase
     {
         private List<double> _currentA;
         private List<double> _currentB;
@@ -41,6 +41,7 @@ namespace OscilAnalyzer
 
         Reader reader;
         List<AnalogChannelConfig> _analogChanells;
+        
 
         public List<string> SignalALLNames { get => _signalALLNames; set => SetProperty(ref _signalALLNames, value); }
         public string CurrentAName { get => _currentAName; 
@@ -52,6 +53,7 @@ namespace OscilAnalyzer
         public string VoltageCName { get => _voltageCName; set => UpdateSignal(ref _voltageCName, value); }
         public double NumOfPoints { get => _numOfPoints; set => _numOfPoints = value; }
         public List<string> SignalNames { get => _signalNames; set => _signalNames = value; }
+        public List<double> TimeValues { get => _timeValues; set => _timeValues = value; }
 
         public CometradeParser()
         {
@@ -59,6 +61,9 @@ namespace OscilAnalyzer
             SignalNames = new List<string>();
             StartRead = new DelegateCommand(ReadSignal);
             SelectSignal = new DelegateCommand(SelectPhaseSignal, CanReadSelectSignal);
+            PlotControl = new WpfPlot();
+            ;
+            
         }
 
         public void ReadSignal()
@@ -69,7 +74,7 @@ namespace OscilAnalyzer
             _voltageA = new List<double>();
             _voltageB = new List<double>();
             _voltageC = new List<double>();
-            _timeValues = new List<double>();
+            TimeValues = new List<double>();
 
             reader = new Reader(_cfgFileName, _datFileName);
             _analogChanells = reader.Config.AnalogChannels;
@@ -82,14 +87,15 @@ namespace OscilAnalyzer
             _voltageA.Clear();
             _voltageB.Clear();
             _voltageC.Clear();
-            _timeValues.Clear();
+            TimeValues.Clear();
             //ScottPlotControls.Clear();
             //ScottPlots.Clear();
+
             // Перевод из микросек. в миллисек.
-            //for (int i = 0; i < reader.DatTime.Count; i++)
-            //{
-            //    _timeValues[i] = reader.DatTime[i]/1000;
-            //}
+            foreach (var time in reader.DatTime)
+            {
+                TimeValues.Add( time / 1000);
+            }
         }
         public void SelectPhaseSignal()
         {
@@ -108,7 +114,7 @@ namespace OscilAnalyzer
             {
 
                 int index = _analogChanells.FindIndex(x => x.Name == signalName);
-                if (SignalALLNames.Count > 0)
+                if (SignalALLNames.Count != 0)
                 {
                     foreach (var sample in reader.AnalogData)
                     {
@@ -160,6 +166,13 @@ namespace OscilAnalyzer
             && !string.IsNullOrEmpty(VoltageAName)
             && !string.IsNullOrEmpty(VoltageBName)
             && !string.IsNullOrEmpty(VoltageCName);
+        }
+        void Plot()
+        {
+            double[] dataX = { 1, 2, 3, 4, 5 };
+            double[] dataY = { 1, 4, 9, 16, 25 };
+            PlotControl.Plot.Add.Scatter(dataX, dataY);
+            PlotControl.Refresh();
         }
         private void UpdateSignal(ref string field, string newValue)
         {
