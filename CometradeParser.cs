@@ -31,12 +31,12 @@ namespace OscilAnalyzer
         private string _cfgFileName;
         private string _datFileName;
         private WpfPlot _multiPlot;
-        private Plotter _plotIA;
-        private Plotter _plotIB;
-        private Plotter _plotIC;
-        private Plotter _plotUA;
-        private Plotter _plotUB;
-        private Plotter _plotUC;
+        private MultiPlotter _plotIA;
+        private MultiPlotter _plotIB;
+        private MultiPlotter _plotIC;
+        private MultiPlotter _plotUA;
+        private MultiPlotter _plotUB;
+        private MultiPlotter _plotUC;
 
         public DelegateCommand StartRead { get; set; }
         public DelegateCommand SelectSignal { get; set; }
@@ -59,12 +59,12 @@ namespace OscilAnalyzer
         public List<double> TimeValues { get => _timeValues; set => _timeValues = value; }
         public List<string> SignalNames { get => _signalNames; set => _signalNames = value; }
 
-        public Plotter PlotIA { get => _plotIA; set => SetProperty(ref _plotIA,value); }
-        public Plotter PlotIB { get => _plotIB; set => SetProperty(ref _plotIB, value); }
-        public Plotter PlotIC { get => _plotIC; set => SetProperty(ref _plotIC, value); }
-        public Plotter PlotUA { get => _plotUA; set => SetProperty(ref _plotUA, value); }
-        public Plotter PlotUB { get => _plotUB; set => SetProperty(ref _plotUB, value); }
-        public Plotter PlotUC { get => _plotUC; set => SetProperty(ref _plotUC, value); }
+        public MultiPlotter PlotIA { get => _plotIA; set => SetProperty(ref _plotIA,value); }
+        public MultiPlotter PlotIB { get => _plotIB; set => SetProperty(ref _plotIB, value); }
+        public MultiPlotter PlotIC { get => _plotIC; set => SetProperty(ref _plotIC, value); }
+        public MultiPlotter PlotUA { get => _plotUA; set => SetProperty(ref _plotUA, value); }
+        public MultiPlotter PlotUB { get => _plotUB; set => SetProperty(ref _plotUB, value); }
+        public MultiPlotter PlotUC { get => _plotUC; set => SetProperty(ref _plotUC, value); }
         public WpfPlot MultiPlot { get => _multiPlot; set => SetProperty(ref _multiPlot, value); }
 
         public CometradeParser()
@@ -161,12 +161,12 @@ namespace OscilAnalyzer
                 j++;
             }
             //Построение графиков
-            PlotIA = new Plotter(_currentA, TimeValues, CurrentAName, "A");
-            PlotIB = new Plotter(_currentB, TimeValues, CurrentBName, "A");
-            PlotIC = new Plotter(_currentC, TimeValues, CurrentCName, "A");
-            PlotUA = new Plotter(_voltageA, TimeValues, VoltageAName, "V");
-            PlotUB = new Plotter(_voltageB, TimeValues, VoltageBName, "V");
-            PlotUC = new Plotter(_voltageC, TimeValues, VoltageCName, "V");
+            PlotIA = new MultiPlotter(_currentA, TimeValues, CurrentAName, "A");
+            PlotIB = new MultiPlotter(_currentB, TimeValues, CurrentBName, "A");
+            PlotIC = new MultiPlotter(_currentC, TimeValues, CurrentCName, "A");
+            PlotUA = new MultiPlotter(_voltageA, TimeValues, VoltageAName, "V");
+            PlotUB = new MultiPlotter(_voltageB, TimeValues, VoltageBName, "V");
+            PlotUC = new MultiPlotter(_voltageC, TimeValues, VoltageCName, "V");
         }
         private bool CanReadSelectSignal()
         {
