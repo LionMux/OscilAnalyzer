@@ -1,6 +1,4 @@
 ﻿
-using OscilAnalyzer.Parce;
-
 namespace COMTRADE_parser
 {
     public interface ICfgParser

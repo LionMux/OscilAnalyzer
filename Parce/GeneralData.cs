@@ -1,4 +1,4 @@
-﻿namespace OscilAnalyzer.Parce
+﻿namespace COMTRADE_parser
 {
     using System.Collections.Generic;
 

@@ -2,13 +2,11 @@
 using System.Linq;
 using System.Windows.Input;
 using Prism.Commands;
-using ScottPlot;
 using ScottPlot.WPF;
 using System.Collections.ObjectModel;
 using System;
 using COMTRADE_parser;
 using Prism.Mvvm;
-using OscilAnalyzer.Parce;
 
 namespace OscilAnalyzer
 {
@@ -30,40 +28,59 @@ namespace OscilAnalyzer
         private string _voltageBName;
         private string _voltageCName;
         private double _numOfPoints;
-
-        public WpfPlot PlotControl { get; set; }
+        private string _cfgFileName;
+        private string _datFileName;
+        private WpfPlot _multiPlot;
+        private Plotter _plotIA;
+        private Plotter _plotIB;
+        private Plotter _plotIC;
+        private Plotter _plotUA;
+        private Plotter _plotUB;
+        private Plotter _plotUC;
 
         public DelegateCommand StartRead { get; set; }
         public DelegateCommand SelectSignal { get; set; }
-
-        private string _cfgFileName = "C:\\Users\\muhac\\Desktop\\Diplom\\Files\\25_newRTDS.cfg";
-        private string _datFileName = "C:\\Users\\muhac\\Desktop\\Diplom\\Files\\25_newRTDS.dat";
+        public DelegateCommand SelectCfgFile { get; set; }
 
         Reader reader;
         List<AnalogChannelConfig> _analogChanells;
-        
 
         public List<string> SignalALLNames { get => _signalALLNames; set => SetProperty(ref _signalALLNames, value); }
-        public string CurrentAName { get => _currentAName; 
-            set => UpdateSignal(ref _currentAName, value); }
+        public string CurrentAName { get => _currentAName; set => UpdateSignal(ref _currentAName, value); }
         public string CurrentBName { get => _currentBName; set => UpdateSignal(ref _currentBName, value); }
         public string CurrentCName { get => _currentCName; set => UpdateSignal(ref _currentCName, value); }
         public string VoltageAName { get => _voltageAName; set => UpdateSignal(ref _voltageAName, value); }
         public string VoltageBName { get => _voltageBName; set => UpdateSignal(ref _voltageBName, value); }
         public string VoltageCName { get => _voltageCName; set => UpdateSignal(ref _voltageCName, value); }
+        public string CfgFileName { get => _cfgFileName; set => UpdateSignal(ref _cfgFileName, value); }
+        public string DatFileName { get => _datFileName; set => UpdateSignal(ref _datFileName, value); }
+
         public double NumOfPoints { get => _numOfPoints; set => _numOfPoints = value; }
-        public List<string> SignalNames { get => _signalNames; set => _signalNames = value; }
         public List<double> TimeValues { get => _timeValues; set => _timeValues = value; }
+        public List<string> SignalNames { get => _signalNames; set => _signalNames = value; }
+
+        public Plotter PlotIA { get => _plotIA; set => SetProperty(ref _plotIA,value); }
+        public Plotter PlotIB { get => _plotIB; set => SetProperty(ref _plotIB, value); }
+        public Plotter PlotIC { get => _plotIC; set => SetProperty(ref _plotIC, value); }
+        public Plotter PlotUA { get => _plotUA; set => SetProperty(ref _plotUA, value); }
+        public Plotter PlotUB { get => _plotUB; set => SetProperty(ref _plotUB, value); }
+        public Plotter PlotUC { get => _plotUC; set => SetProperty(ref _plotUC, value); }
+        public WpfPlot MultiPlot { get => _multiPlot; set => SetProperty(ref _multiPlot, value); }
 
         public CometradeParser()
         {
             SignalALLNames = new List<string>();
             SignalNames = new List<string>();
-            StartRead = new DelegateCommand(ReadSignal);
+            SelectCfgFile = new DelegateCommand(OpenCfgDialog);
+            StartRead = new DelegateCommand(ReadSignal, CanReadStart);
             SelectSignal = new DelegateCommand(SelectPhaseSignal, CanReadSelectSignal);
-            PlotControl = new WpfPlot();
-            ;
-            
+
+            //PlotIA = new WpfPlot();
+            //PlotIB = new WpfPlot();
+            //PlotIC = new WpfPlot();
+            //PlotUA = new WpfPlot();
+            //PlotUB = new WpfPlot();
+            //PlotUC = new WpfPlot();
         }
 
         public void ReadSignal()
@@ -76,7 +93,7 @@ namespace OscilAnalyzer
             _voltageC = new List<double>();
             TimeValues = new List<double>();
 
-            reader = new Reader(_cfgFileName, _datFileName);
+            reader = new Reader(CfgFileName, DatFileName);
             _analogChanells = reader.Config.AnalogChannels;
             SignalALLNames = _analogChanells.Select(x => x.Name).ToList();
 
@@ -92,9 +109,9 @@ namespace OscilAnalyzer
             //ScottPlots.Clear();
 
             // Перевод из микросек. в миллисек.
-            foreach (var time in reader.DatTime)
+            foreach (var time in reader.DataTime)
             {
-                TimeValues.Add( time / 1000);
+                TimeValues.Add(time / 1000);
             }
         }
         public void SelectPhaseSignal()
@@ -143,20 +160,13 @@ namespace OscilAnalyzer
                 }
                 j++;
             }
-            if (PlotControl != null && _currentA.Count > 0)
-            {
-                var plt = PlotControl.Plot;
-                plt.Clear();
-                double[] ys = _currentA.ToArray();
-                double[] xs = Enumerable.Range(0, ys.Length).Select(i => (double)i).ToArray();
-
-                plt.AddScatter(xs, ys, label: "Ток A");
-                plt.Title("График тока A");
-                plt.XLabel("Точка");
-                plt.YLabel("Амплитуда");
-
-                PlotControl.Refresh();
-            }
+            //Построение графиков
+            PlotIA = new Plotter(_currentA, TimeValues, CurrentAName, "A");
+            PlotIB = new Plotter(_currentB, TimeValues, CurrentBName, "A");
+            PlotIC = new Plotter(_currentC, TimeValues, CurrentCName, "A");
+            PlotUA = new Plotter(_voltageA, TimeValues, VoltageAName, "V");
+            PlotUB = new Plotter(_voltageB, TimeValues, VoltageBName, "V");
+            PlotUC = new Plotter(_voltageC, TimeValues, VoltageCName, "V");
         }
         private bool CanReadSelectSignal()
         {
@@ -167,17 +177,53 @@ namespace OscilAnalyzer
             && !string.IsNullOrEmpty(VoltageBName)
             && !string.IsNullOrEmpty(VoltageCName);
         }
-        void Plot()
+
+        private bool CanReadStart()
         {
-            double[] dataX = { 1, 2, 3, 4, 5 };
-            double[] dataY = { 1, 4, 9, 16, 25 };
-            PlotControl.Plot.Add.Scatter(dataX, dataY);
-            PlotControl.Refresh();
+            return !string.IsNullOrEmpty(CfgFileName)
+                && !string.IsNullOrEmpty(DatFileName);
         }
+        //private void Plot()
+        //{
+        //    double[] dataY1 = _currentA.ToArray();
+        //    double[] dataY2 = _currentB.ToArray();
+        //    double[] dataY3 = _currentC.ToArray();
+        //    double[] dataX = TimeValues.ToArray();
+
+        //    var plt = PlotControl.Plot;
+
+        //    plt.AddScatter(dataX, dataY1, label: "Phase A");
+        //    plt.AddScatter(dataX, dataY2, label: "Phase B");
+        //    plt.AddScatter(dataX, dataY3, label: "Phase C");
+
+        //    plt.Title(CurrentAName);
+        //    plt.XLabel("time");
+        //    plt.YLabel("I, A");
+        //    plt.Legend();
+
+        //    PlotControl.Refresh();
+        //}
         private void UpdateSignal(ref string field, string newValue)
         {
             SetProperty(ref field, newValue);
             SelectSignal.RaiseCanExecuteChanged();
+            StartRead.RaiseCanExecuteChanged();
+
+        }
+
+        private void OpenCfgDialog()
+        {
+            var dlg = new Microsoft.Win32.OpenFileDialog()
+            {
+                Filter = "COMETRADE CFG|*.cfg|Все файлы|*.*",
+                Title = "Выберите CFG-файл"
+            };
+            if (dlg.ShowDialog() == true)
+            {
+                CfgFileName = dlg.FileName;
+                DatFileName = CfgFileName.Replace(".cfg", ".dat");
+            }
+            
         }
     }
 }

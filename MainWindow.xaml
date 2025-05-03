@@ -6,22 +6,20 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:OscilAnalyzer"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="500" Width="800">
 
     <Window.DataContext>
         <local:CometradeParser/>
     </Window.DataContext>
     <Grid ShowGridLines="True">
 
-        <ScottPlot:WpfPlot x:Name="WpfPlot1" />
-        
         <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition/>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="60" />
         </Grid.RowDefinitions>
-        <StackPanel Grid.Row="3"
+        <ScottPlot:WpfPlot x:Name="DirectPlot"/>
+        <StackPanel Grid.Row="2"
                     Height="50"
                     Orientation="Horizontal"
                     HorizontalAlignment="Center">
@@ -35,24 +33,29 @@
                     Margin="10"
                     Height="30"
                     Width="auto"/>
+            <Button Command ="{Binding SelectCfgFile}"
+                    Content="Выбрать CFG файл" 
+                    Margin="10"
+                    Height="30"
+                    Width="auto"/>
         </StackPanel>
-        <StackPanel Grid.Row="2"
+        <StackPanel Grid.Row="1"
             Orientation="Horizontal"
             HorizontalAlignment="Left"
             Margin="10">
             <StackPanel Orientation="Vertical">
                 <TextBlock Text="Current" FontWeight="Bold" HorizontalAlignment="Center"/>
                 <StackPanel Orientation="Horizontal">
-                    
-                <ComboBox ItemsSource="{Binding SignalALLNames}"
+
+                    <ComboBox ItemsSource="{Binding SignalALLNames}"
                   Text="IA"
                   IsEditable="True"    
                   SelectedItem="{Binding CurrentAName,Mode=TwoWay}" />
-                <ComboBox ItemsSource="{Binding SignalALLNames}"
+                    <ComboBox ItemsSource="{Binding SignalALLNames}"
                   Text="IB"
                   IsEditable="True"
                   SelectedItem="{Binding CurrentBName,Mode=TwoWay}" />
-                <ComboBox ItemsSource="{Binding SignalALLNames}"
+                    <ComboBox ItemsSource="{Binding SignalALLNames}"
                   Text="IC"
                   IsEditable="True"
                   IsReadOnly="True"
@@ -60,23 +63,23 @@
                 </StackPanel>
             </StackPanel>
             <StackPanel Margin="10">
-                
+
             </StackPanel>
             <StackPanel Orientation="Vertical">
                 <TextBlock Text="Voltage" FontWeight="Bold" HorizontalAlignment="Center"/>
                 <StackPanel Orientation="Horizontal">
-                    
-                <ComboBox ItemsSource="{Binding SignalALLNames}"
+
+                    <ComboBox ItemsSource="{Binding SignalALLNames}"
                   Text="UA"
                   IsEditable="True"
                   IsReadOnly="True"
                   SelectedItem="{Binding VoltageAName,Mode=TwoWay}" />
-                <ComboBox ItemsSource="{Binding SignalALLNames}"
+                    <ComboBox ItemsSource="{Binding SignalALLNames}"
                   Text="UB"
                   IsEditable="True"
                   IsReadOnly="True"
                   SelectedItem="{Binding VoltageBName,Mode=TwoWay}"/>
-                <ComboBox ItemsSource="{Binding SignalALLNames}"
+                    <ComboBox ItemsSource="{Binding SignalALLNames}"
                   Text="UC"
                   IsEditable="True"
                   IsReadOnly="True"
@@ -84,8 +87,15 @@
                 </StackPanel>
             </StackPanel>
         </StackPanel>
-        <ScrollViewer Grid.Row="1">
-            <ContentControl Content="{Binding PlotControl, Mode=OneTime}"/>
+        <ScrollViewer Grid.Row="0">
+            <StackPanel Orientation="Vertical">
+                <ContentControl Content="{Binding PlotIA.PlotControl, Mode=OneWay}"/>
+                <ContentControl Content="{Binding PlotIB.PlotControl, Mode=OneWay}"/>
+                <ContentControl Content="{Binding PlotIC.PlotControl, Mode=OneWay}"/>
+                <ContentControl Content="{Binding PlotUA.PlotControl, Mode=OneWay}"/>
+                <ContentControl Content="{Binding PlotUB.PlotControl, Mode=OneWay}"/>
+                <ContentControl Content="{Binding PlotUC.PlotControl, Mode=OneWay}"/>
+            </StackPanel>
         </ScrollViewer>
     </Grid>
 </Window>

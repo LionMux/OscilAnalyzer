@@ -1,19 +1,23 @@
 ﻿
 using System.IO;
-using OscilAnalyzer.Parce;
 
-namespace COMTRADE_parser.Parce
+namespace COMTRADE_parser
 
 {
     public class AsciiDatParser : IDatParser
     {
-        private List<double> _datTime;
-        public List<double> DatTime { get => _datTime;}
+
+        public List<double> DatTime { get; set; }
+
+        public AsciiDatParser()
+        {
+            DatTime = new List<double>();
+        }
 
         public List<List<double>> ParseAnalogData(string filePath, ComtradeConfig config)
         {
             var analogData = new List<List<double>>();
-            var DatTime = new List<double>();
+            DatTime.Clear();
             var lines = File.ReadAllLines(filePath);
 
             foreach (var line in lines)
