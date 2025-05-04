@@ -12,13 +12,12 @@
         <local:CometradeParser/>
     </Window.DataContext>
     <Grid ShowGridLines="True">
-
         <Grid.RowDefinitions>
             <RowDefinition/>
             <RowDefinition Height="auto" />
             <RowDefinition Height="60" />
         </Grid.RowDefinitions>
-        <ScottPlot:WpfPlot x:Name="DirectPlot"/>
+        <ScottPlot:WpfPlot x:Name="PlotControl"/>
         <StackPanel Grid.Row="2"
                     Height="50"
                     Orientation="Horizontal"
@@ -88,14 +87,14 @@
             </StackPanel>
         </StackPanel>
         <ScrollViewer Grid.Row="0">
-            <StackPanel Orientation="Vertical">
-                <ContentControl Content="{Binding PlotIA.PlotControl, Mode=OneWay}"/>
-                <ContentControl Content="{Binding PlotIB.PlotControl, Mode=OneWay}"/>
-                <ContentControl Content="{Binding PlotIC.PlotControl, Mode=OneWay}"/>
-                <ContentControl Content="{Binding PlotUA.PlotControl, Mode=OneWay}"/>
-                <ContentControl Content="{Binding PlotUB.PlotControl, Mode=OneWay}"/>
-                <ContentControl Content="{Binding PlotUC.PlotControl, Mode=OneWay}"/>
-            </StackPanel>
+            <UniformGrid Rows="6" Columns="1" Height="auto" >
+                <ContentControl Content="{Binding PlotIA.PlotControl, Mode=OneWay}" Height="350"/>
+                <ContentControl Content="{Binding PlotIB.PlotControl, Mode=OneWay}" Height="350"/>
+                <ContentControl Content="{Binding PlotIC.PlotControl, Mode=OneWay}" Height="350"/>
+                <ContentControl Content="{Binding PlotUA.PlotControl, Mode=OneWay}" Height="350"/>
+                <ContentControl Content="{Binding PlotUB.PlotControl, Mode=OneWay}" Height="350"/>
+                <ContentControl Content="{Binding PlotUC.PlotControl, Mode=OneWay}" Height="350"/>
+            </UniformGrid>
         </ScrollViewer>
     </Grid>
 </Window>

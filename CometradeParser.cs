@@ -7,6 +7,9 @@ using System.Collections.ObjectModel;
 using System;
 using COMTRADE_parser;
 using Prism.Mvvm;
+using ScottPlot;
+using System.Reflection.Emit;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace OscilAnalyzer
 {
@@ -30,14 +33,12 @@ namespace OscilAnalyzer
         private double _numOfPoints;
         private string _cfgFileName;
         private string _datFileName;
-        private WpfPlot _multiPlot;
-        private MultiPlotter _plotIA;
-        private MultiPlotter _plotIB;
-        private MultiPlotter _plotIC;
-        private MultiPlotter _plotUA;
-        private MultiPlotter _plotUB;
-        private MultiPlotter _plotUC;
-
+        private Plotter _plotIA;
+        private Plotter _plotIB;
+        private Plotter _plotIC;
+        private Plotter _plotUA;
+        private Plotter _plotUB;
+        private Plotter _plotUC;
         public DelegateCommand StartRead { get; set; }
         public DelegateCommand SelectSignal { get; set; }
         public DelegateCommand SelectCfgFile { get; set; }
@@ -59,13 +60,12 @@ namespace OscilAnalyzer
         public List<double> TimeValues { get => _timeValues; set => _timeValues = value; }
         public List<string> SignalNames { get => _signalNames; set => _signalNames = value; }
 
-        public MultiPlotter PlotIA { get => _plotIA; set => SetProperty(ref _plotIA,value); }
-        public MultiPlotter PlotIB { get => _plotIB; set => SetProperty(ref _plotIB, value); }
-        public MultiPlotter PlotIC { get => _plotIC; set => SetProperty(ref _plotIC, value); }
-        public MultiPlotter PlotUA { get => _plotUA; set => SetProperty(ref _plotUA, value); }
-        public MultiPlotter PlotUB { get => _plotUB; set => SetProperty(ref _plotUB, value); }
-        public MultiPlotter PlotUC { get => _plotUC; set => SetProperty(ref _plotUC, value); }
-        public WpfPlot MultiPlot { get => _multiPlot; set => SetProperty(ref _multiPlot, value); }
+        public Plotter PlotIA { get => _plotIA; set => SetProperty(ref _plotIA, value); }
+        public Plotter PlotIB { get => _plotIB; set => SetProperty(ref _plotIB, value); }
+        public Plotter PlotIC { get => _plotIC; set => SetProperty(ref _plotIC, value); }
+        public Plotter PlotUA { get => _plotUA; set => SetProperty(ref _plotUA, value); }
+        public Plotter PlotUB { get => _plotUB; set => SetProperty(ref _plotUB, value); }
+        public Plotter PlotUC { get => _plotUC; set => SetProperty(ref _plotUC, value); }
 
         public CometradeParser()
         {
@@ -75,12 +75,6 @@ namespace OscilAnalyzer
             StartRead = new DelegateCommand(ReadSignal, CanReadStart);
             SelectSignal = new DelegateCommand(SelectPhaseSignal, CanReadSelectSignal);
 
-            //PlotIA = new WpfPlot();
-            //PlotIB = new WpfPlot();
-            //PlotIC = new WpfPlot();
-            //PlotUA = new WpfPlot();
-            //PlotUB = new WpfPlot();
-            //PlotUC = new WpfPlot();
         }
 
         public void ReadSignal()
@@ -105,8 +99,6 @@ namespace OscilAnalyzer
             _voltageB.Clear();
             _voltageC.Clear();
             TimeValues.Clear();
-            //ScottPlotControls.Clear();
-            //ScottPlots.Clear();
 
             // Перевод из микросек. в миллисек.
             foreach (var time in reader.DataTime)
@@ -160,13 +152,9 @@ namespace OscilAnalyzer
                 }
                 j++;
             }
+
             //Построение графиков
-            PlotIA = new MultiPlotter(_currentA, TimeValues, CurrentAName, "A");
-            PlotIB = new MultiPlotter(_currentB, TimeValues, CurrentBName, "A");
-            PlotIC = new MultiPlotter(_currentC, TimeValues, CurrentCName, "A");
-            PlotUA = new MultiPlotter(_voltageA, TimeValues, VoltageAName, "V");
-            PlotUB = new MultiPlotter(_voltageB, TimeValues, VoltageBName, "V");
-            PlotUC = new MultiPlotter(_voltageC, TimeValues, VoltageCName, "V");
+            Plot();
         }
         private bool CanReadSelectSignal()
         {
@@ -178,31 +166,35 @@ namespace OscilAnalyzer
             && !string.IsNullOrEmpty(VoltageCName);
         }
 
+        private void Plot()
+        {
+            PlotIA = new Plotter(_currentA, TimeValues, CurrentAName, "A");
+            PlotIB = new Plotter(_currentB, TimeValues, CurrentBName, "A");
+            PlotIC = new Plotter(_currentC, TimeValues, CurrentCName, "A");
+            PlotUA = new Plotter(_voltageA, TimeValues, VoltageAName, "V");
+            PlotUB = new Plotter(_voltageB, TimeValues, VoltageBName, "V");
+            PlotUC = new Plotter(_voltageC, TimeValues, VoltageCName, "V");
+        }
+
         private bool CanReadStart()
         {
             return !string.IsNullOrEmpty(CfgFileName)
                 && !string.IsNullOrEmpty(DatFileName);
         }
-        //private void Plot()
-        //{
-        //    double[] dataY1 = _currentA.ToArray();
-        //    double[] dataY2 = _currentB.ToArray();
-        //    double[] dataY3 = _currentC.ToArray();
-        //    double[] dataX = TimeValues.ToArray();
+        private void BuildMultiPlot()
+        {
+            var multiPlot = new ScottPlot.Multiplot();
 
-        //    var plt = PlotControl.Plot;
+            // configure the multiplot to use 2 subplots
+            multiPlot.AddPlots(2);
+            var plot1 = multiPlot.Subplots.GetPlot(0);
+            var plot2 = multiPlot.Subplots.GetPlot(1);
 
-        //    plt.AddScatter(dataX, dataY1, label: "Phase A");
-        //    plt.AddScatter(dataX, dataY2, label: "Phase B");
-        //    plt.AddScatter(dataX, dataY3, label: "Phase C");
+            // add sample data to each subplot
+            plot1.Add.Scatter(TimeValues, _currentA);
+            plot2.Add.Scatter(TimeValues, _currentB);
 
-        //    plt.Title(CurrentAName);
-        //    plt.XLabel("time");
-        //    plt.YLabel("I, A");
-        //    plt.Legend();
-
-        //    PlotControl.Refresh();
-        //}
+        }
         private void UpdateSignal(ref string field, string newValue)
         {
             SetProperty(ref field, newValue);
