@@ -43,8 +43,8 @@ namespace COMTRADE_parser
                 }
 
                 // Очистка значений от пробелов и лишних символов
-                var aValue = parts[6].Trim();
-                var bValue = parts[7].Trim();
+                var aValue = parts[5].Trim();
+                var bValue = parts[6].Trim();
 
                 // Парсинг с указанием культуры (разделитель точка)
                 config.AnalogChannels.Add(new AnalogChannelConfig

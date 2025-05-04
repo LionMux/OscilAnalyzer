@@ -30,7 +30,7 @@ namespace COMTRADE_parser
                 {
                     double rawValue = double.Parse(parts[2 + i]);
                     var channelConfig = config.AnalogChannels[i];
-                    sample.Add(rawValue * channelConfig.A + channelConfig.B);
+                    sample.Add(rawValue * channelConfig.A + channelConfig.B); /** channelConfig.A + channelConfig.B);*/
                 }
 
                 analogData.Add(sample);
