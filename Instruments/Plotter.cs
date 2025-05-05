@@ -15,6 +15,14 @@ namespace OscilAnalyzer
         private double[] _dataY;
         private double[] _dataX;
         public WpfPlot PlotControl { get; set; }
+
+        /// <summary>
+        /// Строит график в соответствии с двумя одинаковыми массивами данных X и Y
+        /// </summary>
+        /// <param name="dataY">Значения оси ординат</param>
+        /// <param name="dataX">Значения оси абцисс</param>
+        /// <param name="nameSignal">Наименование сигнала</param>
+        /// <param name="unit">Единицы измерения</param>
         public Plotter(List<double> dataY, List<double> dataX, string nameSignal, string unit)
         {
 

@@ -8,12 +8,10 @@ using System;
 using COMTRADE_parser;
 using Prism.Mvvm;
 using ScottPlot;
-using System.Reflection.Emit;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace OscilAnalyzer
 {
-    public class CometradeParser : BindableBase
+    public class CometradeParserViewModel : BindableBase
     {
         private List<double> _currentA;
         private List<double> _currentB;
@@ -33,6 +31,7 @@ namespace OscilAnalyzer
         private double _numOfPoints;
         private string _cfgFileName;
         private string _datFileName;
+        private bool _stopReadSelectSignal;
         private Plotter _plotIA;
         private Plotter _plotIB;
         private Plotter _plotIC;
@@ -66,13 +65,13 @@ namespace OscilAnalyzer
         public Plotter PlotUA { get => _plotUA; set => SetProperty(ref _plotUA, value); }
         public Plotter PlotUB { get => _plotUB; set => SetProperty(ref _plotUB, value); }
         public Plotter PlotUC { get => _plotUC; set => SetProperty(ref _plotUC, value); }
+        public bool StopReadSelectSignal { get => _stopReadSelectSignal; set => SetProperty(ref _stopReadSelectSignal, value); }
 
-        public CometradeParser()
+        public CometradeParserViewModel()
         {
             SignalALLNames = new List<string>();
             SignalNames = new List<string>();
-            SelectCfgFile = new DelegateCommand(OpenCfgDialog);
-            StartRead = new DelegateCommand(ReadSignal, CanReadStart);
+            StartRead = new DelegateCommand(ReadSignal);
             SelectSignal = new DelegateCommand(SelectPhaseSignal, CanReadSelectSignal);
 
         }
@@ -87,6 +86,8 @@ namespace OscilAnalyzer
             _voltageC = new List<double>();
             TimeValues = new List<double>();
 
+            // Открытие файла с осциллограммой
+            OpenCfgDialog();
             reader = new Reader(CfgFileName, DatFileName);
             _analogChanells = reader.Config.AnalogChannels;
             SignalALLNames = _analogChanells.Select(x => x.Name).ToList();
@@ -100,7 +101,7 @@ namespace OscilAnalyzer
             _voltageC.Clear();
             TimeValues.Clear();
 
-            // Перевод из микросек. в миллисек.
+            // Перевод времени из микросек. в миллисек.
             foreach (var time in reader.DataTime)
             {
                 TimeValues.Add(time / 1000);
@@ -118,7 +119,11 @@ namespace OscilAnalyzer
                 SignalNames.Add(VoltageBName);
                 SignalNames.Add(VoltageCName);
             }
-            //заполнение фаз токов и напряжений
+            else
+            {
+                throw new NullReferenceException();
+            }
+            // Заполнение сигналов токов и напряжений пофазно
             foreach (var signalName in SignalNames)
             {
 
@@ -153,8 +158,12 @@ namespace OscilAnalyzer
                 j++;
             }
 
-            //Построение графиков
+            // Построение графиков
             Plot();
+
+            // Блокировка повторного заполнения сигналов
+            StopReadSelectSignal = true;
+            SelectSignal.RaiseCanExecuteChanged();
         }
         private bool CanReadSelectSignal()
         {
@@ -163,7 +172,8 @@ namespace OscilAnalyzer
             && !string.IsNullOrEmpty(CurrentCName)
             && !string.IsNullOrEmpty(VoltageAName)
             && !string.IsNullOrEmpty(VoltageBName)
-            && !string.IsNullOrEmpty(VoltageCName);
+            && !string.IsNullOrEmpty(VoltageCName)
+            && !StopReadSelectSignal;
         }
 
         private void Plot()
@@ -174,27 +184,9 @@ namespace OscilAnalyzer
             PlotUA = new Plotter(_voltageA, TimeValues, VoltageAName, "V");
             PlotUB = new Plotter(_voltageB, TimeValues, VoltageBName, "V");
             PlotUC = new Plotter(_voltageC, TimeValues, VoltageCName, "V");
+            
         }
 
-        private bool CanReadStart()
-        {
-            return !string.IsNullOrEmpty(CfgFileName)
-                && !string.IsNullOrEmpty(DatFileName);
-        }
-        private void BuildMultiPlot()
-        {
-            var multiPlot = new ScottPlot.Multiplot();
-
-            // configure the multiplot to use 2 subplots
-            multiPlot.AddPlots(2);
-            var plot1 = multiPlot.Subplots.GetPlot(0);
-            var plot2 = multiPlot.Subplots.GetPlot(1);
-
-            // add sample data to each subplot
-            plot1.Add.Scatter(TimeValues, _currentA);
-            plot2.Add.Scatter(TimeValues, _currentB);
-
-        }
         private void UpdateSignal(ref string field, string newValue)
         {
             SetProperty(ref field, newValue);
@@ -215,7 +207,6 @@ namespace OscilAnalyzer
                 CfgFileName = dlg.FileName;
                 DatFileName = CfgFileName.Replace(".cfg", ".dat");
             }
-            
         }
     }
 }
