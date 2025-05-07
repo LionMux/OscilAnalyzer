@@ -1,4 +1,5 @@
-﻿using Prism.Ioc;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Prism.Ioc;
 using Prism.Unity;
 using System.Windows;
 
@@ -18,6 +19,18 @@ namespace OscilAnalyzer
         {
 
         }
+        public IServiceProvider ServiceProvider { get; private set; }
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            base.OnStartup(e);
+
+            var servises = new ServiceCollection();
+
+            //Регистрация всех зависимостей
+            servises.AddSingleton<>;
+        }
+
     }
 
 }
