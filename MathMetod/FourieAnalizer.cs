@@ -6,10 +6,10 @@ namespace ComtradeParser
 {
     internal class FourieAnalizer
     {
-        private Complex _a = new Complex(-0.5, Math.Sqrt(3) / 2);        //задаем стандартный фазовый поворот
+        private Complex _a = new Complex(-0.5, Math.Sqrt(3) / 2);//задаем стандартный фазовый поворот
         private Complex _aa = new Complex(-0.5, -Math.Sqrt(3) / 2);
         private Complex _imagine = new Complex(0, 1);
-        double T = 0.02;              //Период
+        double T = 0.02; //Период
         private int _pofPer;
         private int _N;
         private double[] _signal_Time;
