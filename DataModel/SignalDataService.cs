@@ -1,26 +1,25 @@
 ﻿using System;
+using Prism.Commands;
 using System.ComponentModel;
-
-public class SignalDataService : INotifyPropertyChanged
+using Prism.Mvvm;
+namespace OscilAnalyzer
 {
-    private List<double> _currentA;
-    private List<double> _currentB;
-    private List<double> _currentC;
-    private List<double> _voltageA;
-    private List<double> _voltageB;
-    private List<double> _voltageC;
-    private List<double> _timeValues;
+    public class SignalDataService : BindableBase
+    {
+        private List<double> _currentA;
+        private List<double> _currentB;
+        private List<double> _currentC;
+        private List<double> _voltageA;
+        private List<double> _voltageB;
+        private List<double> _voltageC;
+        private List<double> _timeValues;
 
-    public List<double> CurrentA { get => _currentA; set => _currentA = value; }
-    public List<double> CurrentB { get => _currentB; set => _currentB = value; }
-    public List<double> CurrentC { get => _currentC; set => _currentC = value; }
-    public List<double> VoltageA { get => _voltageA; set => _voltageA = value; }
-    public List<double> VoltageB { get => _voltageB; set => _voltageB = value; }
-    public List<double> VoltageC { get => _voltageC; set => _voltageC = value; }
-    public List<double> TimeValues { get => _timeValues; set => _timeValues = value; }
-
-    public event PropertyChangedEventHandler PropertyChanged;
-
-    protected void OnPropertyChanged(string propertyName) =>
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        public List<double> CurrentA { get => _currentA; set => SetProperty(ref _currentA, value); }
+        public List<double> CurrentB { get => _currentB; set => SetProperty(ref _currentB, value); }
+        public List<double> CurrentC { get => _currentC; set => SetProperty(ref _currentC, value); }
+        public List<double> VoltageA { get => _voltageA; set => SetProperty(ref _voltageA, value); }
+        public List<double> VoltageB { get => _voltageB; set => SetProperty(ref _voltageB, value); }
+        public List<double> VoltageC { get => _voltageC; set => SetProperty(ref _voltageC, value); }
+        public List<double> TimeValues { get => _timeValues; set => SetProperty(ref _timeValues, value); }
+    }
 }

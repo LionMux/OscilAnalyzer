@@ -13,13 +13,13 @@ namespace OscilAnalyzer
 {
     public class CometradeParserViewModel : BindableBase
     {
-        private List<double> _currentA;
-        private List<double> _currentB;
-        private List<double> _currentC;
-        private List<double> _voltageA;
-        private List<double> _voltageB;
-        private List<double> _voltageC;
-        private List<double> _timeValues;
+        //private List<double> _signalDataService._CurrentA;
+        //private List<double> _signalDataService._CurrentB;
+        //private List<double> _signalDataService._CurrentC;
+        //private List<double> _signalDataService._VoltageA;
+        //private List<double> _signalDataService._VoltageB;
+        //private List<double> _signalDataService._VoltageC;
+        //private List<double> _signalDataService._TimeValues;
         private List<string> _signalALLNames;
         private List<string> _signalNames;
         private string _currentAName;
@@ -44,6 +44,7 @@ namespace OscilAnalyzer
 
         Reader reader;
         List<AnalogChannelConfig> _analogChanells;
+        private readonly SignalDataService _signalDataService;
 
         public List<string> SignalALLNames { get => _signalALLNames; set => SetProperty(ref _signalALLNames, value); }
         public string CurrentAName { get => _currentAName; set => UpdateSignal(ref _currentAName, value); }
@@ -56,7 +57,7 @@ namespace OscilAnalyzer
         public string DatFileName { get => _datFileName; set => UpdateSignal(ref _datFileName, value); }
 
         public double NumOfPoints { get => _numOfPoints; set => _numOfPoints = value; }
-        public List<double> TimeValues { get => _timeValues; set => _timeValues = value; }
+        //public List<double> TimeValues { get => _signalDataService._TimeValues; set => _signalDataService._TimeValues = value; }
         public List<string> SignalNames { get => _signalNames; set => _signalNames = value; }
 
         public Plotter PlotIA { get => _plotIA; set => SetProperty(ref _plotIA, value); }
@@ -67,8 +68,9 @@ namespace OscilAnalyzer
         public Plotter PlotUC { get => _plotUC; set => SetProperty(ref _plotUC, value); }
         public bool StopReadSelectSignal { get => _stopReadSelectSignal; set => SetProperty(ref _stopReadSelectSignal, value); }
 
-        public CometradeParserViewModel()
+        public CometradeParserViewModel(SignalDataService signalDataService)
         {
+            _signalDataService = signalDataService;
             SignalALLNames = new List<string>();
             SignalNames = new List<string>();
             StartRead = new DelegateCommand(ReadSignal);
@@ -78,13 +80,13 @@ namespace OscilAnalyzer
 
         public void ReadSignal()
         {
-            _currentA = new List<double>();
-            _currentB = new List<double>();
-            _currentC = new List<double>();
-            _voltageA = new List<double>();
-            _voltageB = new List<double>();
-            _voltageC = new List<double>();
-            TimeValues = new List<double>();
+            _signalDataService.CurrentA = new List<double>();
+            _signalDataService.CurrentB = new List<double>();
+            _signalDataService.CurrentC = new List<double>();
+            _signalDataService.VoltageA = new List<double>();
+            _signalDataService.VoltageB = new List<double>();
+            _signalDataService.VoltageC = new List<double>();
+            _signalDataService.TimeValues = new List<double>();
 
             // Открытие файла с осциллограммой
             OpenCfgDialog();
@@ -93,18 +95,18 @@ namespace OscilAnalyzer
             SignalALLNames = _analogChanells.Select(x => x.Name).ToList();
 
             // Очистка старых данных
-            _currentA.Clear();
-            _currentB.Clear();
-            _currentC.Clear();
-            _voltageA.Clear();
-            _voltageB.Clear();
-            _voltageC.Clear();
-            TimeValues.Clear();
+            _signalDataService.CurrentA.Clear();
+            _signalDataService.CurrentB.Clear();
+            _signalDataService.CurrentC.Clear();
+            _signalDataService.VoltageA.Clear();
+            _signalDataService.VoltageB.Clear();
+            _signalDataService.VoltageC.Clear();
+            _signalDataService.TimeValues.Clear();
 
             // Перевод времени из микросек. в миллисек.
             foreach (var time in reader.DataTime)
             {
-                TimeValues.Add(time / 1000);
+                _signalDataService.TimeValues.Add(time / 1000);
             }
         }
         public void SelectPhaseSignal()
@@ -135,22 +137,22 @@ namespace OscilAnalyzer
                             switch (j)
                             {
                                 case 1:
-                                    _currentA.Add(sample[index]);
+                                    _signalDataService.CurrentA.Add(sample[index]);
                                     break;
                                 case 2:
-                                    _currentB.Add(sample[index]);
+                                    _signalDataService.CurrentB.Add(sample[index]);
                                     break;
                                 case 3:
-                                    _currentC.Add(sample[index]);
+                                    _signalDataService.CurrentC.Add(sample[index]);
                                     break;
                                 case 4:
-                                    _voltageA.Add(sample[index]);
+                                    _signalDataService.VoltageA.Add(sample[index]);
                                     break;
                                 case 5:
-                                    _voltageB.Add(sample[index]);
+                                    _signalDataService.VoltageB.Add(sample[index]);
                                     break;
                                 case 6:
-                                    _voltageC.Add(sample[index]);
+                                    _signalDataService.VoltageC.Add(sample[index]);
                                     break;
                             }
                     }
@@ -165,6 +167,7 @@ namespace OscilAnalyzer
             StopReadSelectSignal = true;
             SelectSignal.RaiseCanExecuteChanged();
         }
+
         private bool CanReadSelectSignal()
         {
             return !string.IsNullOrEmpty(CurrentAName)
@@ -178,12 +181,12 @@ namespace OscilAnalyzer
 
         private void Plot()
         {
-            PlotIA = new Plotter(_currentA, TimeValues, CurrentAName, "A");
-            PlotIB = new Plotter(_currentB, TimeValues, CurrentBName, "A");
-            PlotIC = new Plotter(_currentC, TimeValues, CurrentCName, "A");
-            PlotUA = new Plotter(_voltageA, TimeValues, VoltageAName, "V");
-            PlotUB = new Plotter(_voltageB, TimeValues, VoltageBName, "V");
-            PlotUC = new Plotter(_voltageC, TimeValues, VoltageCName, "V");
+            PlotIA = new Plotter(_signalDataService.CurrentA, _signalDataService.TimeValues, CurrentAName, "A");
+            PlotIB = new Plotter(_signalDataService.CurrentB, _signalDataService.TimeValues, CurrentBName, "A");
+            PlotIC = new Plotter(_signalDataService.CurrentC, _signalDataService.TimeValues, CurrentCName, "A");
+            PlotUA = new Plotter(_signalDataService.VoltageA, _signalDataService.TimeValues, VoltageAName, "V");
+            PlotUB = new Plotter(_signalDataService.VoltageB, _signalDataService.TimeValues, VoltageBName, "V");
+            PlotUC = new Plotter(_signalDataService.VoltageC, _signalDataService.TimeValues, VoltageCName, "V");
             
         }
 

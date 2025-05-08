@@ -1,4 +1,5 @@
 ﻿
+using System.Globalization;
 using System.IO;
 
 namespace COMTRADE_parser
@@ -28,9 +29,9 @@ namespace COMTRADE_parser
 
                 for (int i = 0; i < config.AnalogChannelsCount; i++)
                 {
-                    double rawValue = double.Parse(parts[2 + i]);
+                    double rawValue = double.Parse(parts[2 + i], CultureInfo.InvariantCulture);
                     var channelConfig = config.AnalogChannels[i];
-                    sample.Add(rawValue * channelConfig.A + channelConfig.B); /** channelConfig.A + channelConfig.B);*/
+                    sample.Add(rawValue * channelConfig.A + channelConfig.B);
                 }
 
                 analogData.Add(sample);

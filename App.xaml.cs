@@ -19,17 +19,17 @@ namespace OscilAnalyzer
         {
 
         }
-        public IServiceProvider ServiceProvider { get; private set; }
+        //public IServiceProvider ServiceProvider { get; private set; }
 
-        protected override void OnStartup(StartupEventArgs e)
-        {
-            base.OnStartup(e);
+        //protected override void OnStartup(StartupEventArgs e)
+        //{
+        //    base.OnStartup(e);
 
-            var servises = new ServiceCollection();
+        //    var servises = new ServiceCollection();
 
-            //Регистрация всех зависимостей
-            servises.AddSingleton<>;
-        }
+        //    //Регистрация всех зависимостей
+        //    servises.AddSingleton<>;
+        //}
 
     }
 
