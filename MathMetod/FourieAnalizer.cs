@@ -36,14 +36,14 @@ namespace ComtradeParser
         public Complex[] Obratnaya { get => _obratnaya; set => _obratnaya = value; }
         public Complex[] Nulevaya { get => _nulevaya; set => _nulevaya = value; }
 
-        public FourieAnalizer(int N, double _pOfPer, double[] signal_A, double[] signal_B, double[] signal_C)
+        public FourieAnalizer(int N, double _pOfPer, IEnumerable<double> signal_A, IEnumerable<double> signal_B, IEnumerable<double> signal_C)
         {
             _pofPer = (int)_pOfPer; // Число точек на период
             _N = N; // Число точек
             _signal_Time = new double[_N];
-            _signalA = signal_A;
-            _signalC = signal_C;
-            _signalB = signal_B;
+            _signalA = signal_A.ToArray();
+            _signalC = signal_C.ToArray();
+            _signalB = signal_B.ToArray();
             _freq_Out = new List<double>();
             _f = 1 / T;             //Частота
             _w = 2 * Math.PI * _f;        // угловая частота

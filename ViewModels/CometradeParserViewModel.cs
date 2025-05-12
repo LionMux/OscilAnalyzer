@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System;
 using COMTRADE_parser;
 using Prism.Mvvm;
+using Prism.Services;
 using ScottPlot;
 
 namespace OscilAnalyzer
@@ -42,8 +43,8 @@ namespace OscilAnalyzer
         public DelegateCommand SelectSignal { get; set; }
         public DelegateCommand SelectCfgFile { get; set; }
 
-        Reader reader;
-        List<AnalogChannelConfig> _analogChanells;
+        private Reader _reader;
+        private List<AnalogChannelConfig> _analogChanells;
         private readonly SignalDataService _signalDataService;
 
         public List<string> SignalALLNames { get => _signalALLNames; set => SetProperty(ref _signalALLNames, value); }
@@ -56,7 +57,7 @@ namespace OscilAnalyzer
         public string CfgFileName { get => _cfgFileName; set => UpdateSignal(ref _cfgFileName, value); }
         public string DatFileName { get => _datFileName; set => UpdateSignal(ref _datFileName, value); }
 
-        public double NumOfPoints { get => _numOfPoints; set => _numOfPoints = value; }
+        //public double NumOfPoints { get => _numOfPoints; set => _numOfPoints = value; }
         //public List<double> TimeValues { get => _signalDataService._TimeValues; set => _signalDataService._TimeValues = value; }
         public List<string> SignalNames { get => _signalNames; set => _signalNames = value; }
 
@@ -67,16 +68,19 @@ namespace OscilAnalyzer
         public Plotter PlotUB { get => _plotUB; set => SetProperty(ref _plotUB, value); }
         public Plotter PlotUC { get => _plotUC; set => SetProperty(ref _plotUC, value); }
         public bool StopReadSelectSignal { get => _stopReadSelectSignal; set => SetProperty(ref _stopReadSelectSignal, value); }
-
         public CometradeParserViewModel(SignalDataService signalDataService)
         {
             _signalDataService = signalDataService;
+            //для XAML
             SignalALLNames = new List<string>();
             SignalNames = new List<string>();
             StartRead = new DelegateCommand(ReadSignal);
             SelectSignal = new DelegateCommand(SelectPhaseSignal, CanReadSelectSignal);
-
         }
+        //public CometradeParserViewModel(SignalDataService signalDataService)
+        //{
+        //    _signalDataService = signalDataService;            
+        //}
 
         public void ReadSignal()
         {
@@ -90,8 +94,8 @@ namespace OscilAnalyzer
 
             // Открытие файла с осциллограммой
             OpenCfgDialog();
-            reader = new Reader(CfgFileName, DatFileName);
-            _analogChanells = reader.Config.AnalogChannels;
+            _reader = new Reader(CfgFileName, DatFileName);
+            _analogChanells = _reader.Config.AnalogChannels;
             SignalALLNames = _analogChanells.Select(x => x.Name).ToList();
 
             // Очистка старых данных
@@ -104,7 +108,7 @@ namespace OscilAnalyzer
             _signalDataService.TimeValues.Clear();
 
             // Перевод времени из микросек. в миллисек.
-            foreach (var time in reader.DataTime)
+            foreach (var time in _reader.DataTime)
             {
                 _signalDataService.TimeValues.Add(time / 1000);
             }
@@ -112,7 +116,7 @@ namespace OscilAnalyzer
         public void SelectPhaseSignal()
         {
             int j = 1;
-            if (reader != null)
+            if (_reader != null)
             {
                 SignalNames.Add(CurrentAName);
                 SignalNames.Add(CurrentBName);
@@ -132,7 +136,7 @@ namespace OscilAnalyzer
                 int index = _analogChanells.FindIndex(x => x.Name == signalName);
                 if (SignalALLNames.Count != 0)
                 {
-                    foreach (var sample in reader.AnalogData)
+                    foreach (var sample in _reader.AnalogData)
                     {
                             switch (j)
                             {
@@ -200,7 +204,7 @@ namespace OscilAnalyzer
 
         private void OpenCfgDialog()
         {
-            var dlg = new Microsoft.Win32.OpenFileDialog()
+            var dlg = new Microsoft.Win32.OpenFileDialog() 
             {
                 Filter = "COMETRADE CFG|*.cfg|Все файлы|*.*",
                 Title = "Выберите CFG-файл"

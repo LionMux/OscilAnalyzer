@@ -15,12 +15,14 @@ using System.Windows.Shapes;
 
 namespace OscilAnalyzer
 {
-    public partial class CometradeParserView : UserControl
+    /// <summary>
+    /// Логика взаимодействия для AnalizeOscillogramView.xaml
+    /// </summary>
+    public partial class AnalizeOscillogramView : UserControl
     {
-        public CometradeParserView()//CometradeParserViewModel viewModel)
+        public AnalizeOscillogramView()
         {
             InitializeComponent();
-            //DataContext = viewModel;
         }
     }
 }
