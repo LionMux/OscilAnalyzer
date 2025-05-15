@@ -3,6 +3,7 @@ using Prism.Ioc;
 using Prism.Unity;
 using System.Windows;
 using COMTRADE_parser;
+using Prism.Regions;
 
 namespace OscilAnalyzer
 {
@@ -18,28 +19,27 @@ namespace OscilAnalyzer
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            // Регистрация сервисов
             containerRegistry.RegisterSingleton<SignalDataService>();
             containerRegistry.RegisterSingleton<Reader>();
+
+            // Регистрация ViewModel
             containerRegistry.Register<CometradeParserViewModel>();
-            //containerRegistry.Register<CometradeParserView>();
             containerRegistry.Register<AnalizeOscillogramViewModel>();
-            //containerRegistry.Register<AnalizeOscillogramView>();
-            containerRegistry.RegisterForNavigation<CometradeParserView, CometradeParserViewModel>();
-            containerRegistry.RegisterForNavigation<AnalizeOscillogramView, AnalizeOscillogramViewModel>();
+
+            // Регистрация View для навигации (без указания ViewModel)
+            containerRegistry.RegisterForNavigation<CometradeParserView>();
+            containerRegistry.RegisterForNavigation<AnalizeOscillogramView>();
         }
-        //public IServiceProvider ServiceProvider { get; private set; }
-        //protected override void OnStartup(StartupEventArgs e)
-        //{
-        //    base.OnStartup(e);
 
-        //    var services = new ServiceCollection();
+        protected override void OnInitialized()
+        {
+            base.OnInitialized();
 
-        //    //Регистрация всех зависимостей
-        //    services.AddSingleton<SignalDataService>();
-        //    services.AddSingleton<CometradeParserViewModel>();
-        //    services.AddSingleton<AnalizeOscillogramViewModel>();
-        //    var serviceProvider = services.BuildServiceProvider();
-        //}
+            var regionManager = Container.Resolve<IRegionManager>();
+            regionManager.RequestNavigate("CometradeRegion", "CometradeParserView");
+            regionManager.RequestNavigate("AnalizeRegion", "AnalizeOscillogramView");
+        }
 
     }
 

@@ -1,15 +1,12 @@
 ﻿<Window x:Class="OscilAnalyzer.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:ScottPlot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:OscilAnalyzer"
-        xmlns:chartView="clr-namespace:OscilAnalyzer"
-        mc:Ignorable="d"
+        xmlns:prism="http://prismlibrary.com/"
         Title="MainWindow" Height="500" Width="800">
     <Grid>
-        <chartView:CometradeParserView/>
-        <chartView:AnalizeOscillogramView/>
+        <ContentControl 
+            prism:RegionManager.RegionName="CometradeRegion"/>
+        <ContentControl 
+            prism:RegionManager.RegionName="AnalizeRegion"/>
     </Grid>
 </Window>
