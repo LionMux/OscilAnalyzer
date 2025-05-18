@@ -71,7 +71,7 @@ namespace COMTRADE_parser
 
         private void ParseMetadata(string[] lines, ComtradeConfig config)
         {
-            string line = lines[lines.Length - 5].Trim();
+            string line = lines[lines.Length - 6].Trim();
             config.LineFrequency = double.Parse(line, CultureInfo.InvariantCulture);
             string[] line1 = lines[lines.Length - 4].Trim().Split(",");
             config.Rate = double.Parse(line1[0], CultureInfo.InvariantCulture);

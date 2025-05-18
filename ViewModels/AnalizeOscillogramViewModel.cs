@@ -28,7 +28,7 @@ namespace OscilAnalyzer
         private List<Complex> _fourieUA;
         private List<Complex> _fourieUB;
         private List<Complex> _fourieUC;
-        private long _numOfPoints;
+        private int _numOfPoints;
         private int _numOfPer;
         private bool _fourieAnalizeF;
 
@@ -45,6 +45,8 @@ namespace OscilAnalyzer
         public List<Complex> FourieUB { get => _fourieUB; set => _fourieUB = value; }
         public List<Complex> FourieUC { get => _fourieUC; set => _fourieUC = value; }
 
+        public int NumOfPoints { get => _numOfPoints; set => _numOfPoints = value; }
+        public int NumOfPer { get => _numOfPer; set => _numOfPer = value; }
         public DelegateCommand StartAnalizeFourie { get; set; }
         public DelegateCommand StartAnalizeTypeOfFault { get; set; }
 
@@ -62,10 +64,16 @@ namespace OscilAnalyzer
             FourieUA = new List<Complex>();
             FourieUB = new List<Complex>();
             FourieUC = new List<Complex>();
-            _numOfPoints = _reader.Config.EndSample;
-
-            _fourieAnalizerI = new FourieAnalizer(5000, 20, _signalDataService.CurrentA, _signalDataService.CurrentB, _signalDataService.CurrentC);
-            _fourieAnalizerU = new FourieAnalizer(5000, 20, _signalDataService.VoltageA, _signalDataService.VoltageB, _signalDataService.VoltageC);
+            NumOfPoints = (int)_reader.Config.EndSample;
+            for (int i = 0; i < _signalDataService.TimeValues.Count; i++)
+            {
+                if (_signalDataService.TimeValues[i] <= (1000 / _reader.Config.LineFrequency))
+                {
+                    NumOfPer++;
+                }
+            }
+            _fourieAnalizerI = new FourieAnalizer(NumOfPoints, NumOfPer, _signalDataService.CurrentA, _signalDataService.CurrentB, _signalDataService.CurrentC);
+            _fourieAnalizerU = new FourieAnalizer(NumOfPoints, NumOfPer, _signalDataService.VoltageA, _signalDataService.VoltageB, _signalDataService.VoltageC);
             _fourieAnalizerI.RunAnalize();
             _fourieAnalizerU.RunAnalize();
             FourieIA = _fourieAnalizerI.fourie_A.ToList();

@@ -23,7 +23,6 @@ namespace OscilAnalyzer
         private string _voltageAName;
         private string _voltageBName;
         private string _voltageCName;
-        private double _numOfPoints;
         private string _cfgFileName;
         private string _datFileName;
         private bool _stopReadSelectSignal;
@@ -101,7 +100,7 @@ namespace OscilAnalyzer
             {
                 _signalDataService.TimeValues.Add(time / 1000);
             }
-
+            
             var parameters = new NavigationParameters
             {
                 { "reader", _reader }
