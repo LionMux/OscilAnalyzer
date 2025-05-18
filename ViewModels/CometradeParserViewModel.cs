@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System;
 using COMTRADE_parser;
 using Prism.Mvvm;
+using Prism.Regions;
 using Prism.Services;
 using ScottPlot;
 
@@ -14,13 +15,6 @@ namespace OscilAnalyzer
 {
     public class CometradeParserViewModel : BindableBase
     {
-        //private List<double> _signalDataService._CurrentA;
-        //private List<double> _signalDataService._CurrentB;
-        //private List<double> _signalDataService._CurrentC;
-        //private List<double> _signalDataService._VoltageA;
-        //private List<double> _signalDataService._VoltageB;
-        //private List<double> _signalDataService._VoltageC;
-        //private List<double> _signalDataService._TimeValues;
         private List<string> _signalALLNames;
         private List<string> _signalNames;
         private string _currentAName;
@@ -46,6 +40,7 @@ namespace OscilAnalyzer
         private Reader _reader;
         private List<AnalogChannelConfig> _analogChanells;
         private readonly SignalDataService _signalDataService;
+        private readonly IRegionManager _regionManager;
 
         public List<string> SignalALLNames { get => _signalALLNames; set => SetProperty(ref _signalALLNames, value); }
         public string CurrentAName { get => _currentAName; set => UpdateSignal(ref _currentAName, value); }
@@ -56,9 +51,6 @@ namespace OscilAnalyzer
         public string VoltageCName { get => _voltageCName; set => UpdateSignal(ref _voltageCName, value); }
         public string CfgFileName { get => _cfgFileName; set => UpdateSignal(ref _cfgFileName, value); }
         public string DatFileName { get => _datFileName; set => UpdateSignal(ref _datFileName, value); }
-
-        //public double NumOfPoints { get => _numOfPoints; set => _numOfPoints = value; }
-        //public List<double> TimeValues { get => _signalDataService._TimeValues; set => _signalDataService._TimeValues = value; }
         public List<string> SignalNames { get => _signalNames; set => _signalNames = value; }
 
         public Plotter PlotIA { get => _plotIA; set => SetProperty(ref _plotIA, value); }
@@ -68,19 +60,16 @@ namespace OscilAnalyzer
         public Plotter PlotUB { get => _plotUB; set => SetProperty(ref _plotUB, value); }
         public Plotter PlotUC { get => _plotUC; set => SetProperty(ref _plotUC, value); }
         public bool StopReadSelectSignal { get => _stopReadSelectSignal; set => SetProperty(ref _stopReadSelectSignal, value); }
-        public CometradeParserViewModel(SignalDataService signalDataService)
+
+        public CometradeParserViewModel(SignalDataService signalDataService, IRegionManager regionManager)
         {
+            _regionManager = regionManager;
             _signalDataService = signalDataService;
-            //для XAML
             SignalALLNames = new List<string>();
             SignalNames = new List<string>();
             StartRead = new DelegateCommand(ReadSignal);
             SelectSignal = new DelegateCommand(SelectPhaseSignal, CanReadSelectSignal);
         }
-        //public CometradeParserViewModel(SignalDataService signalDataService)
-        //{
-        //    _signalDataService = signalDataService;            
-        //}
 
         public void ReadSignal()
         {
@@ -112,12 +101,20 @@ namespace OscilAnalyzer
             {
                 _signalDataService.TimeValues.Add(time / 1000);
             }
+
+            var parameters = new NavigationParameters
+            {
+                { "reader", _reader }
+            };
+            _regionManager.RequestNavigate("OscillAnalizeRegion", "AnalizeOscillogramView", parameters);
         }
         public void SelectPhaseSignal()
         {
+            int index = 0;
             int j = 1;
             if (_reader != null)
             {
+                SignalNames.Clear();
                 SignalNames.Add(CurrentAName);
                 SignalNames.Add(CurrentBName);
                 SignalNames.Add(CurrentCName);
@@ -133,7 +130,7 @@ namespace OscilAnalyzer
             foreach (var signalName in SignalNames)
             {
 
-                int index = _analogChanells.FindIndex(x => x.Name == signalName);
+                index = _analogChanells.FindIndex(x => x.Name == signalName);
                 if (SignalALLNames.Count != 0)
                 {
                     foreach (var sample in _reader.AnalogData)
@@ -197,6 +194,7 @@ namespace OscilAnalyzer
         private void UpdateSignal(ref string field, string newValue)
         {
             SetProperty(ref field, newValue);
+            StopReadSelectSignal = false;
             SelectSignal.RaiseCanExecuteChanged();
             StartRead.RaiseCanExecuteChanged();
 

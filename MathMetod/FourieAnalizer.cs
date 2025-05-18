@@ -61,7 +61,6 @@ namespace ComtradeParser
             {
                 _signal_Time[i] = i * _dt;
             }
-
             // По умолчанию в преобразовании 1-я гармоника - весь период, если "наша"
             // гармоника укладывается в период 10 раз - то она будет 10-й
             // Нас это не устраивает, поэтому масштабируем:
@@ -85,10 +84,8 @@ namespace ComtradeParser
                 amplitudeA_arr[i] = fourie_A[1].Magnitude;
                 angleA_arr[i] = fourie_A[1].Phase;// -(2 * pi / (PofPer));
             }
-
             //_________________________________________________________________________________________   
             // простое фурье через два цикла 
-
             fourie_B = new Complex[_pofPer];
             amplitudeB_arr = new double[(_N - _pofPer)];
             double[] angleB_arr = new double[(_N - _pofPer)];
@@ -108,7 +105,6 @@ namespace ComtradeParser
                 amplitudeB_arr[i] = fourie_B[1].Magnitude;
                 angleB_arr[i] = fourie_B[1].Phase;// -(2 * pi / (PofPer));
             }
-
             //________________________________________________________________________________________________
             // простое фурье через два цикла 
             fourie_C = new Complex[_pofPer];
@@ -131,7 +127,6 @@ namespace ComtradeParser
                 angleC_arr[i] = fourie_C[1].Phase;// -(2 * pi / (PofPer));
             }
 
-
             double A1_3 = (double)1 / 3;
 
             for (int i = 0; i < (_N - _pofPer); i++)
@@ -148,8 +143,6 @@ namespace ComtradeParser
                     + amplitudeB_arr[i] * Complex.Exp(_imagine * angleB_arr[i])
                     + amplitudeC_arr[i] * Complex.Exp(_imagine * angleC_arr[i]));
             }
-
-
         }
     }
 }

@@ -1,12 +1,12 @@
 ﻿<Window x:Class="OscilAnalyzer.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:prism="http://prismlibrary.com/"
+        xmlns:prism="http://www.codeplex.com/prism"
         Title="MainWindow" Height="500" Width="800">
+
     <Grid>
-        <ContentControl 
-            prism:RegionManager.RegionName="CometradeRegion"/>
-        <ContentControl 
-            prism:RegionManager.RegionName="AnalizeRegion"/>
+        <ContentControl prism:RegionManager.RegionName="CometradeRegion" />
+        <ContentControl prism:RegionManager.RegionName="OscillAnalizeRegion" />
     </Grid>
+
 </Window>

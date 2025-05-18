@@ -23,6 +23,6 @@ namespace OscilAnalyzer
         public AnalizeOscillogramView()
         {
             InitializeComponent();
-        }
+        }   
     }
 }
