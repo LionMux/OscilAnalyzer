@@ -15,14 +15,14 @@ namespace OscilAnalyzer
 {
     public class CometradeParserViewModel : BindableBase
     {
-        private List<string> _signalALLNames;
+        private List<string?> _signalALLNames;
         private List<string> _signalNames;
-        private string _currentAName;
-        private string _currentBName;
-        private string _currentCName;
-        private string _voltageAName;
-        private string _voltageBName;
-        private string _voltageCName;
+        private string? _currentAName;
+        private string? _currentBName;
+        private string? _currentCName;
+        private string? _voltageAName;
+        private string? _voltageBName;
+        private string? _voltageCName;
         private string _cfgFileName;
         private string _datFileName;
         private bool _stopReadSelectSignal;
@@ -35,22 +35,23 @@ namespace OscilAnalyzer
         public DelegateCommand StartRead { get; set; }
         public DelegateCommand SelectSignal { get; set; }
         public DelegateCommand SelectCfgFile { get; set; }
+        public DelegateCommand MoveToNextCommand { get; set; }
 
         private Reader _reader;
         private List<AnalogChannelConfig> _analogChanells;
         private readonly SignalDataService _signalDataService;
         private readonly IRegionManager _regionManager;
 
-        public List<string> SignalALLNames { get => _signalALLNames; set => SetProperty(ref _signalALLNames, value); }
-        public string CurrentAName { get => _currentAName; set => UpdateSignal(ref _currentAName, value); }
-        public string CurrentBName { get => _currentBName; set => UpdateSignal(ref _currentBName, value); }
-        public string CurrentCName { get => _currentCName; set => UpdateSignal(ref _currentCName, value); }
-        public string VoltageAName { get => _voltageAName; set => UpdateSignal(ref _voltageAName, value); }
-        public string VoltageBName { get => _voltageBName; set => UpdateSignal(ref _voltageBName, value); }
-        public string VoltageCName { get => _voltageCName; set => UpdateSignal(ref _voltageCName, value); }
+        public List<string?> SignalALLNames { get => _signalALLNames; set => SetProperty(ref _signalALLNames, value); }
+        public string? CurrentAName { get => _currentAName; set => UpdateSignal(ref _currentAName, value); }
+        public string? CurrentBName { get => _currentBName; set => UpdateSignal(ref _currentBName, value); }
+        public string? CurrentCName { get => _currentCName; set => UpdateSignal(ref _currentCName, value); }
+        public string? VoltageAName { get => _voltageAName; set => UpdateSignal(ref _voltageAName, value); }
+        public string? VoltageBName { get => _voltageBName; set => UpdateSignal(ref _voltageBName, value); }
+        public string? VoltageCName { get => _voltageCName; set => UpdateSignal(ref _voltageCName, value); }
         public string CfgFileName { get => _cfgFileName; set => UpdateSignal(ref _cfgFileName, value); }
         public string DatFileName { get => _datFileName; set => UpdateSignal(ref _datFileName, value); }
-        public List<string> SignalNames { get => _signalNames; set => _signalNames = value; }
+        public List<string?> SignalNames { get => _signalNames; set => _signalNames = value; }
 
         public Plotter PlotIA { get => _plotIA; set => SetProperty(ref _plotIA, value); }
         public Plotter PlotIB { get => _plotIB; set => SetProperty(ref _plotIB, value); }
@@ -64,13 +65,14 @@ namespace OscilAnalyzer
         {
             _regionManager = regionManager;
             _signalDataService = signalDataService;
-            SignalALLNames = new List<string>();
-            SignalNames = new List<string>();
+            SignalALLNames = new List<string?>();
+            SignalNames = new List<string?>();
             StartRead = new DelegateCommand(ReadSignal);
             SelectSignal = new DelegateCommand(SelectPhaseSignal, CanReadSelectSignal);
+            MoveToNextCommand = new DelegateCommand(MoveToNext);
         }
 
-        public void ReadSignal()
+        private void ReadSignal()
         {
             _signalDataService.CurrentA = new List<double>();
             _signalDataService.CurrentB = new List<double>();
@@ -84,33 +86,28 @@ namespace OscilAnalyzer
             OpenCfgDialog();
             _reader = new Reader(CfgFileName, DatFileName);
             _analogChanells = _reader.Config.AnalogChannels;
-            SignalALLNames = _analogChanells.Select(x => x.Name).ToList();
+            SignalALLNames = _analogChanells.Select(x => x?.Name).ToList();
 
-            // Очистка старых данных
-            _signalDataService.CurrentA.Clear();
-            _signalDataService.CurrentB.Clear();
-            _signalDataService.CurrentC.Clear();
-            _signalDataService.VoltageA.Clear();
-            _signalDataService.VoltageB.Clear();
-            _signalDataService.VoltageC.Clear();
-            _signalDataService.TimeValues.Clear();
-
-            // Перевод времени из микросек. в миллисек.
-            foreach (var time in _reader.DataTime)
-            {
-                _signalDataService.TimeValues.Add(time / 1000);
-            }
+            CLearOldData();
             
-            var parameters = new NavigationParameters
-            {
-                { "reader", _reader }
-            };
-            _regionManager.RequestNavigate("OscillAnalizeRegion", "AnalizeOscillogramView", parameters);
+
+            _signalDataService.NumOfPoints = (int)_reader.Config.EndSample;
+            _signalDataService.PoOfPer = (int)(_reader.Config.Rate / _reader.Config.LineFrequency);
         }
-        public void SelectPhaseSignal()
+
+        private void MoveToNext()
         {
-            int index = 0;
-            int j = 1;
+            _regionManager.RequestNavigate("ContentRegion", "AnalizeOscillogramView");
+        }
+
+        private List<double> MicrosecondsToMilliseconds(IEnumerable<double> dataTime)
+        {
+            return dataTime.Select(t => t / 1000).ToList();
+        }
+
+
+        private void SelectPhaseSignal()
+        {
             if (_reader != null)
             {
                 SignalNames.Clear();
@@ -125,47 +122,59 @@ namespace OscilAnalyzer
             {
                 throw new NullReferenceException();
             }
-            // Заполнение сигналов токов и напряжений пофазно
-            foreach (var signalName in SignalNames)
-            {
+            FillCurrentAndVoltageSignals();
+            _signalDataService.TimeValues = MicrosecondsToMilliseconds(_reader.DataTime);
+            Plot();
 
-                index = _analogChanells.FindIndex(x => x.Name == signalName);
+            StopReadSelectSignal = true;
+            SelectSignal.RaiseCanExecuteChanged();
+        }
+
+        private void CLearOldData()
+        {
+            _signalDataService.CurrentA.Clear();
+            _signalDataService.CurrentB.Clear();
+            _signalDataService.CurrentC.Clear();
+            _signalDataService.VoltageA.Clear();
+            _signalDataService.VoltageB.Clear();
+            _signalDataService.VoltageC.Clear();
+            _signalDataService.TimeValues.Clear();
+        }
+        private void FillCurrentAndVoltageSignals()
+        {
+            CLearOldData();
+            int index = 0;
+            for (int j = 0; j < SignalNames.Count; j++)
+            {
+                index = _analogChanells.FindIndex(x => x.Name == SignalNames[j]);
                 if (SignalALLNames.Count != 0)
                 {
                     foreach (var sample in _reader.AnalogData)
                     {
-                            switch (j)
-                            {
-                                case 1:
-                                    _signalDataService.CurrentA.Add(sample[index]);
-                                    break;
-                                case 2:
-                                    _signalDataService.CurrentB.Add(sample[index]);
-                                    break;
-                                case 3:
-                                    _signalDataService.CurrentC.Add(sample[index]);
-                                    break;
-                                case 4:
-                                    _signalDataService.VoltageA.Add(sample[index]);
-                                    break;
-                                case 5:
-                                    _signalDataService.VoltageB.Add(sample[index]);
-                                    break;
-                                case 6:
-                                    _signalDataService.VoltageC.Add(sample[index]);
-                                    break;
-                            }
+                        switch (j)
+                        {
+                            case 0:
+                                _signalDataService.CurrentA.Add(sample[index]);
+                                break;
+                            case 1:
+                                _signalDataService.CurrentB.Add(sample[index]);
+                                break;
+                            case 2:
+                                _signalDataService.CurrentC.Add(sample[index]);
+                                break;
+                            case 3:
+                                _signalDataService.VoltageA.Add(sample[index]);
+                                break;
+                            case 4:
+                                _signalDataService.VoltageB.Add(sample[index]);
+                                break;
+                            case 5:
+                                _signalDataService.VoltageC.Add(sample[index]);
+                                break;
+                        }
                     }
                 }
-                j++;
             }
-
-            // Построение графиков
-            Plot();
-
-            // Блокировка повторного заполнения сигналов
-            StopReadSelectSignal = true;
-            SelectSignal.RaiseCanExecuteChanged();
         }
 
         private bool CanReadSelectSignal()
@@ -190,13 +199,12 @@ namespace OscilAnalyzer
             
         }
 
-        private void UpdateSignal(ref string field, string newValue)
+        private void UpdateSignal(ref string? field, string? newValue)
         {
             SetProperty(ref field, newValue);
             StopReadSelectSignal = false;
             SelectSignal.RaiseCanExecuteChanged();
             StartRead.RaiseCanExecuteChanged();
-
         }
 
         private void OpenCfgDialog()

@@ -13,16 +13,17 @@ namespace OscilAnalyzer
         private List<double> _voltageB;
         private List<double> _voltageC;
         private List<double> _timeValues;
-
+        private int _numOfPoints;
+        private int _poOfPer;
         public SignalDataService()
         {
-            CurrentA = new List<double>();
-            CurrentB = new List<double>();
-            CurrentC = new List<double>();
-            VoltageA = new List<double>();
-            VoltageB = new List<double>();
-            VoltageC = new List<double>();
-            TimeValues = new List<double>();
+            _currentA = new List<double>();
+            _currentB = new List<double>();
+            _currentC = new List<double>();
+            _voltageA = new List<double>();
+            _voltageB = new List<double>();
+            _voltageC = new List<double>();
+            _timeValues = new List<double>();
         }
         public List<double> CurrentA { get => _currentA; set => SetProperty(ref _currentA, value); }
         public List<double> CurrentB { get => _currentB; set => SetProperty(ref _currentB, value); }
@@ -31,5 +32,7 @@ namespace OscilAnalyzer
         public List<double> VoltageB { get => _voltageB; set => SetProperty(ref _voltageB, value); }
         public List<double> VoltageC { get => _voltageC; set => SetProperty(ref _voltageC, value); }
         public List<double> TimeValues { get => _timeValues; set => SetProperty(ref _timeValues, value); }
+        public int PoOfPer { get => _poOfPer; set => _poOfPer = value; }
+        public int NumOfPoints { get => _numOfPoints; set => _numOfPoints = value; }
     }
 }

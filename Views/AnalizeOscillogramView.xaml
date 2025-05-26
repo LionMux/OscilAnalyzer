@@ -19,7 +19,12 @@
                     Height="50"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right">
-                <Button Command="{Binding StartAnalizeFourie}"
+            <Button Command="{Binding MoveToBackCommand}"
+                    Content="Назад"
+                    Margin="10"
+                    Height="30"
+                    Width="auto" />
+            <Button Command="{Binding StartAnalizeFourie}"
                     Content="Анализ Фурье" 
                     Margin="10"
                     Height="30"

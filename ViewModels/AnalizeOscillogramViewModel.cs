@@ -33,6 +33,7 @@ namespace OscilAnalyzer
         private bool _fourieAnalizeF;
 
         private readonly SignalDataService _signalDataService;
+        private readonly IRegionManager _regionManager;
         private Reader _reader;
         private FourieAnalizer _fourieAnalizerI;
         private FourieAnalizer _fourieAnalizerU;
@@ -49,12 +50,15 @@ namespace OscilAnalyzer
         public int NumOfPer { get => _numOfPer; set => _numOfPer = value; }
         public DelegateCommand StartAnalizeFourie { get; set; }
         public DelegateCommand StartAnalizeTypeOfFault { get; set; }
+        public DelegateCommand MoveToBackCommand { get; }
 
-        public AnalizeOscillogramViewModel(SignalDataService signalDataService)
+        public AnalizeOscillogramViewModel(SignalDataService signalDataService, IRegionManager regionManager)
         {
             _signalDataService = signalDataService;
+            _regionManager = regionManager;
             StartAnalizeFourie = new DelegateCommand(GetFourieSignals, CanGetFourie);
             StartAnalizeTypeOfFault = new DelegateCommand(StartAnalizeTypeFault, CanStartAnalize);
+            MoveToBackCommand = new DelegateCommand(MoveToBack);
         }
         public void GetFourieSignals()
         {
@@ -64,14 +68,7 @@ namespace OscilAnalyzer
             FourieUA = new List<Complex>();
             FourieUB = new List<Complex>();
             FourieUC = new List<Complex>();
-            NumOfPoints = (int)_reader.Config.EndSample;
-            for (int i = 0; i < _signalDataService.TimeValues.Count; i++)
-            {
-                if (_signalDataService.TimeValues[i] <= (1000 / _reader.Config.LineFrequency))
-                {
-                    NumOfPer++;
-                }
-            }
+
             _fourieAnalizerI = new FourieAnalizer(NumOfPoints, NumOfPer, _signalDataService.CurrentA, _signalDataService.CurrentB, _signalDataService.CurrentC);
             _fourieAnalizerU = new FourieAnalizer(NumOfPoints, NumOfPer, _signalDataService.VoltageA, _signalDataService.VoltageB, _signalDataService.VoltageC);
             _fourieAnalizerI.RunAnalize();
@@ -84,6 +81,11 @@ namespace OscilAnalyzer
             FourieUC = _fourieAnalizerU.fourie_C.ToList();
 
             _fourieAnalizeF = true;
+        }
+
+        private void MoveToBack()
+        {
+            _regionManager.RequestNavigate("ContentRegion", "CometradeParserView");
         }
 
         public void StartAnalizeTypeFault()

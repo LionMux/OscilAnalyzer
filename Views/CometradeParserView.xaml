@@ -33,6 +33,11 @@
                     Margin="10"
                     Height="30"
                     Width="auto"/>
+            <Button Command="{Binding MoveToNextCommand}"
+                    Content="Далее"
+                    Margin="10"
+                    Height="30"
+                    Width="auto" />
         </StackPanel>
         <StackPanel Grid.Row="1"
             Orientation="Horizontal"

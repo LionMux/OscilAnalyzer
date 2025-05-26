@@ -5,8 +5,7 @@
         Title="MainWindow" Height="500" Width="800">
 
     <Grid>
-        <ContentControl prism:RegionManager.RegionName="CometradeRegion" />
-        <ContentControl prism:RegionManager.RegionName="OscillAnalizeRegion" />
+        <ContentControl prism:RegionManager.RegionName="ContentRegion" />
     </Grid>
 
 </Window>

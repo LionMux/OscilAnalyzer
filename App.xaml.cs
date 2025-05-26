@@ -27,10 +27,6 @@ namespace OscilAnalyzer
         {
             // Регистрация сервисов
             containerRegistry.RegisterSingleton<SignalDataService>();
-            containerRegistry.RegisterSingleton<Reader>();
-
-            containerRegistry.Register<CometradeParserViewModel>();
-            containerRegistry.Register<AnalizeOscillogramViewModel>();
 
             // Регистрация View для навигации
             containerRegistry.RegisterForNavigation<CometradeParserView, CometradeParserViewModel>();
@@ -40,18 +36,9 @@ namespace OscilAnalyzer
         protected override void OnInitialized()
         {
             base.OnInitialized();
-            try
-            {
-                var test = Container.Resolve<AnalizeOscillogramViewModel>();
-            }
-            catch (Exception ex)
-            {
-                File.WriteAllText("resolve_error.txt", ex.ToString());
-                throw;
-            }
+            
             var regionManager = Container.Resolve<IRegionManager>();
-            regionManager.RequestNavigate("CometradeRegion", "CometradeParserView");
-            regionManager.RequestNavigate("OscillAnalizeRegion", "AnalizeOscillogramView");
+            regionManager.RequestNavigate("ContentRegion", "CometradeParserView");
         }
 
 

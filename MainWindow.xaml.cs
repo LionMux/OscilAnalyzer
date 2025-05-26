@@ -19,9 +19,6 @@ namespace OscilAnalyzer
         public MainWindow()
         {
             InitializeComponent();
-
-            //var vm = (CometradeParser)this.DataContext;
-            //vm.MultiPlotControl = MultiPlotControl;
         }
 
      
