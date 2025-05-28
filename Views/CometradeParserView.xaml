@@ -12,7 +12,7 @@
     <!--<UserControl.DataContext>
         <local:CometradeParserViewModel/>
     </UserControl.DataContext>-->
-    <Grid ShowGridLines="True">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
             <RowDefinition Height="auto" />

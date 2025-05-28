@@ -1,15 +1,16 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Windows.Input;
+﻿using COMTRADE_parser;
 using Prism.Commands;
-using ScottPlot.WPF;
-using System.Collections.ObjectModel;
-using System;
-using COMTRADE_parser;
 using Prism.Mvvm;
 using Prism.Regions;
 using Prism.Services;
 using ScottPlot;
+using ScottPlot.WPF;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Windows;
+using System.Windows.Input;
 
 namespace OscilAnalyzer
 {
@@ -74,25 +75,42 @@ namespace OscilAnalyzer
 
         private void ReadSignal()
         {
-            _signalDataService.CurrentA = new List<double>();
-            _signalDataService.CurrentB = new List<double>();
-            _signalDataService.CurrentC = new List<double>();
-            _signalDataService.VoltageA = new List<double>();
-            _signalDataService.VoltageB = new List<double>();
-            _signalDataService.VoltageC = new List<double>();
-            _signalDataService.TimeValues = new List<double>();
+            try
+            {
 
-            // Открытие файла с осциллограммой
-            OpenCfgDialog();
-            _reader = new Reader(CfgFileName, DatFileName);
-            _analogChanells = _reader.Config.AnalogChannels;
-            SignalALLNames = _analogChanells.Select(x => x?.Name).ToList();
+                _signalDataService.CurrentA = new List<double>();
+                _signalDataService.CurrentB = new List<double>();
+                _signalDataService.CurrentC = new List<double>();
+                _signalDataService.VoltageA = new List<double>();
+                _signalDataService.VoltageB = new List<double>();
+                _signalDataService.VoltageC = new List<double>();
+                _signalDataService.TimeValues = new List<double>();
 
-            CLearOldData();
-            
+                if (!OpenCfgDialog())
+                {
+                    MessageBox.Show("Для правильной работы программы необходимо прочитать осциллограмму",
+                                  "Предупреждение",
+                                  MessageBoxButton.OK,
+                                  MessageBoxImage.Warning);
+                    return;
+                }
+                _reader = new Reader(CfgFileName, DatFileName);
+                _analogChanells = _reader.Config.AnalogChannels;
+                SignalALLNames = _analogChanells.Select(x => x?.Name).ToList();
 
-            _signalDataService.NumOfPoints = (int)_reader.Config.EndSample;
-            _signalDataService.PoOfPer = (int)(_reader.Config.Rate / _reader.Config.LineFrequency);
+                CLearOldData();
+
+
+                _signalDataService.NumOfPoints = (int)_reader.Config.EndSample;
+                _signalDataService.PoOfPer = (int)(_reader.Config.Rate / _reader.Config.LineFrequency);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Произошла ошибка при чтении осциллограммы: {ex.Message}",
+                               "Ошибка",
+                               MessageBoxButton.OK,
+                               MessageBoxImage.Error);
+            }
         }
 
         private void SelectPhaseSignal()
@@ -139,6 +157,7 @@ namespace OscilAnalyzer
             _signalDataService.VoltageC.Clear();
             _signalDataService.TimeValues.Clear();
         }
+
         private void FillCurrentAndVoltageSignals()
         {
             CLearOldData();
@@ -206,7 +225,7 @@ namespace OscilAnalyzer
             StartRead.RaiseCanExecuteChanged();
         }
 
-        private void OpenCfgDialog()
+        private bool OpenCfgDialog()
         {
             var dlg = new Microsoft.Win32.OpenFileDialog() 
             {
@@ -217,7 +236,13 @@ namespace OscilAnalyzer
             {
                 CfgFileName = dlg.FileName;
                 DatFileName = CfgFileName.Replace(".cfg", ".dat");
+                return true;
             }
+            if (_reader != null)
+            {
+                return true;
+            }
+            return false;
         }
     }
 }
