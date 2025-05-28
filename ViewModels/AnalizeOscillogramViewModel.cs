@@ -29,7 +29,7 @@ namespace OscilAnalyzer
         private int _numOfPoints;
         private int _numOfPointsForVD;
         private int _numOfPer;
-        private bool _fourieAnalizeF;
+        private bool _fourieAnalizeF = true;
 
         private readonly IRegionManager _regionManager;
         private readonly SignalDataService _signalDataService;
@@ -49,6 +49,7 @@ namespace OscilAnalyzer
         public int NumOfPoints { get => _numOfPoints; set => _numOfPoints = value; }
         public int NumOfPer { get => _numOfPer; set => _numOfPer = value; }
         public int NumOfPointsForVD { get => _numOfPointsForVD; set => SetProperty(ref _numOfPointsForVD, value); }
+        public bool FourieAnalizeF { get => _fourieAnalizeF; set => SetProperty(ref _fourieAnalizeF,value); }
         public DelegateCommand StartAnalizeFourie { get; set; }
         public DelegateCommand StartAnalizeTypeOfFault { get; set; }
         public DelegateCommand MoveToBackCommand { get; }
@@ -73,7 +74,7 @@ namespace OscilAnalyzer
             _signalDataService = signalDataService;
             _regionManager = regionManager;
             StartAnalizeFourie = new DelegateCommand(GetFourieSignals, CanGetFourie);
-            StartAnalizeTypeOfFault = new DelegateCommand(StartAnalizeTypeFault, CanStartAnalize);
+            //StartAnalizeTypeOfFault = new DelegateCommand(StartAnalizeTypeFault, CanStartAnalize);
             MoveToBackCommand = new DelegateCommand(MoveToBack);
         }
         public void GetFourieSignals()
@@ -101,8 +102,8 @@ namespace OscilAnalyzer
             FourieUC = _fourieAnalizerU.FourieSignalC.ToList();
 
             VectorsPlot();
-
-            _fourieAnalizeF = true;
+            FourieAnalizeF = false;
+            StartAnalizeFourie.RaiseCanExecuteChanged();
         }
 
         private void VectorsPlot()
@@ -121,14 +122,15 @@ namespace OscilAnalyzer
             _typeOfFaultAnalizer = new TypeOfFaultAnalizer(_fourieAnalizerI, _fourieAnalizerU);
         }
 
-        public bool CanStartAnalize()
-        {
-            return _fourieAnalizeF;
-        }
+        //public bool CanStartAnalize()
+        //{
+        //    return _fourieAnalizeF;
+        //}
 
         public bool CanGetFourie()
         {
-            return _signalDataService.CurrentA.Count != 0;
+            return _signalDataService.CurrentA.Count != 0 &&
+                    FourieAnalizeF;
         }
     }
 }
