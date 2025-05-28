@@ -95,17 +95,6 @@ namespace OscilAnalyzer
             _signalDataService.PoOfPer = (int)(_reader.Config.Rate / _reader.Config.LineFrequency);
         }
 
-        private void MoveToNext()
-        {
-            _regionManager.RequestNavigate("ContentRegion", "AnalizeOscillogramView");
-        }
-
-        private List<double> MicrosecondsToMilliseconds(IEnumerable<double> dataTime)
-        {
-            return dataTime.Select(t => t / 1000).ToList();
-        }
-
-
         private void SelectPhaseSignal()
         {
             if (_reader != null)
@@ -128,6 +117,16 @@ namespace OscilAnalyzer
 
             StopReadSelectSignal = true;
             SelectSignal.RaiseCanExecuteChanged();
+        }
+
+        private void MoveToNext()
+        {
+            _regionManager.RequestNavigate("ContentRegion", "AnalizeOscillogramView");
+        }
+
+        private List<double> MicrosecondsToMilliseconds(IEnumerable<double> dataTime)
+        {
+            return dataTime.Select(t => t / 1000).ToList();
         }
 
         private void CLearOldData()

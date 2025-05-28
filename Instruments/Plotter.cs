@@ -10,7 +10,7 @@ namespace OscilAnalyzer
 {
     public class Plotter
     {
-        private string _nameSignal;
+        private string? _nameSignal;
         private string _unit;
         private double[] _dataY;
         private double[] _dataX;
@@ -23,7 +23,7 @@ namespace OscilAnalyzer
         /// <param name="dataX">Значения оси абцисс</param>
         /// <param name="nameSignal">Наименование сигнала</param>
         /// <param name="unit">Единицы измерения</param>
-        public Plotter(List<double> dataY, List<double> dataX, string nameSignal, string unit)
+        public Plotter(List<double> dataY, List<double> dataX, string? nameSignal, string unit)
         {
 
             _dataY = dataY.ToArray();

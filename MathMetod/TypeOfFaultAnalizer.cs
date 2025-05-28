@@ -46,12 +46,12 @@ namespace COMTRADE_parser.MathMetod
             _fourieAnalizer_I = fourieAnalizer_I;
             _fourieAnalizer_U = fourieAnalizer_U;
 
-            current_A = fourieAnalizer_I.fourie_A;
-            current_B = fourieAnalizer_I.fourie_B;
-            current_C = fourieAnalizer_I.fourie_C;
-            voltage_A = fourieAnalizer_U.fourie_A;
-            voltage_B = fourieAnalizer_U.fourie_B;
-            voltage_C = fourieAnalizer_U.fourie_C;
+            current_A = fourieAnalizer_I.FourieSignalA;
+            current_B = fourieAnalizer_I.FourieSignalB;
+            current_C = fourieAnalizer_I.FourieSignalC;
+            voltage_A = fourieAnalizer_U.FourieSignalA;
+            voltage_B = fourieAnalizer_U.FourieSignalB;
+            voltage_C = fourieAnalizer_U.FourieSignalC;
 
             CalculateImpedance();
         }
