@@ -10,22 +10,31 @@ public class VectorPlotter
     private string? _title;
     private double _radiusAxis;
     private double _maxLenghtVector;
+    private string[]? _lables;
     public WpfPlot PlotControl { get; set; }
 
-    public VectorPlotter(IEnumerable<Complex> signalA, IEnumerable<Complex> signalB, IEnumerable<Complex> signalC, string? title = null)
+    /// <summary>
+    /// Строит векторную диаграмму сигналов в комплексном виде
+    /// </summary>
+    /// <param name="signalA">Набор комплексных значений сигнала фазы A</param>
+    /// <param name="signalB">Набор комплексных значений сигнала фазы B</param>
+    /// <param name="signalC">Набор комплексных значений сигнала фазы C</param>
+    /// <param name="title">Наименование векторной диаграммы</param>
+    /// <param name="labels">Наименование векторов</param>
+    public VectorPlotter(IEnumerable<Complex> signalA, IEnumerable<Complex> signalB, IEnumerable<Complex> signalC, string? title = null, IEnumerable<string>? labels = null)
     {
         if (signalA == null || signalB == null || signalC == null)
         {
             throw new ArgumentNullException("Сигналы не могут быть null");
         }
 
+        _lables = labels.ToArray();
         // Проверка на одинаковую длину последовательностей
         var lengthA = signalA.Count();
         if (lengthA != signalB.Count() || lengthA != signalC.Count())
         {
             throw new ArgumentException("Все сигналы должны иметь одинаковую длину");
         }
-
         _signalA = signalA;
         _signalB = signalB;
         _signalC = signalC;
@@ -83,7 +92,6 @@ public class VectorPlotter
             _signalC.ElementAt(timeIndex)
         };
 
-        var labels = new[] { "A", "B", "C" };
         IPalette palette = new ScottPlot.Palettes.Category10();
         Coordinates center = polarAxis.GetCoordinates(0, 0);
 
@@ -105,7 +113,7 @@ public class VectorPlotter
             arrow.ArrowFillColor = palette.GetColor(i).WithAlpha(0.7);
 
             plt.Add.Text(
-                text: labels[i],
+                text: _lables[i],
                 x: tip.X,
                 y: tip.Y
             );

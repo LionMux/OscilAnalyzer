@@ -108,7 +108,8 @@ namespace OscilAnalyzer
 
         private void VectorsPlot()
         {
-            VectrorPlotter = new VectorPlotter(FourieIA, FourieIB, FourieIC, "Векторная диаграмма токов");
+            var labels = new[] { "A", "B", "C" };
+            VectrorPlotter = new VectorPlotter(FourieIA, FourieIB, FourieIC, "Векторная диаграмма токов", labels);
             _totalTimeMS = _signalDataService.TimeValues.Count;
         }
 
