@@ -63,7 +63,7 @@
 
 
             <!-- K1A -->
-            <Button Width="40" Height="40" Margin="5" Background="{Binding K1AColor}">
+            <Button Width="40" Height="40" Margin="5" Background="{Binding Ka1color}">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" BorderBrush="Black" BorderThickness="1" CornerRadius="24">
@@ -81,7 +81,7 @@
             </Button>
 
             <!-- K1B -->
-            <Button Width="40" Height="40" Margin="5" Background="{Binding K1BColor}">
+            <Button Width="40" Height="40" Margin="5" Background="{Binding Kb1color}">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" BorderBrush="Black" BorderThickness="1" CornerRadius="24">
@@ -99,7 +99,7 @@
             </Button>
 
             <!-- K1C -->
-            <Button Width="40" Height="40" Margin="5" Background="{Binding K1CColor}">
+            <Button Width="40" Height="40" Margin="5" Background="{Binding Kc1color}">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" BorderBrush="Black" BorderThickness="1" CornerRadius="24">
@@ -117,7 +117,7 @@
             </Button>
 
             <!-- K2AB -->
-            <Button Width="40" Height="40" Margin="5" Background="{Binding K2AColor}">
+            <Button Width="40" Height="40" Margin="5" Background="{Binding Kab2color}">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" BorderBrush="Black" BorderThickness="1" CornerRadius="24">
@@ -135,7 +135,7 @@
             </Button>
 
             <!-- K2BC -->
-            <Button Width="40" Height="40" Margin="5" Background="{Binding K2BColor}">
+            <Button Width="40" Height="40" Margin="5" Background="{Binding Kbc2color}">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" BorderBrush="Black" BorderThickness="1" CornerRadius="24">
@@ -153,7 +153,7 @@
             </Button>
 
             <!-- K2CA -->
-            <Button Width="40" Height="40" Margin="5" Background="{Binding K2CColor}">
+            <Button Width="40" Height="40" Margin="5" Background="{Binding Kca2color}">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" BorderBrush="Black" BorderThickness="1" CornerRadius="24">
@@ -171,7 +171,7 @@
             </Button>
 
             <!-- K11AB -->
-            <Button Width="40" Height="40" Margin="5" Background="{Binding K3AColor}">
+            <Button Width="40" Height="40" Margin="5" Background="{Binding Kab11color}">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" BorderBrush="Black" BorderThickness="1" CornerRadius="24">
@@ -189,7 +189,7 @@
             </Button>
 
             <!-- K11BC -->
-            <Button Width="40" Height="40" Margin="5" Background="{Binding K3BColor}">
+            <Button Width="40" Height="40" Margin="5" Background="{Binding Kbc11color}">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" BorderBrush="Black" BorderThickness="1" CornerRadius="24">
@@ -207,7 +207,7 @@
             </Button>
 
             <!-- K11CA -->
-            <Button Width="40" Height="40" Margin="5" Background="{Binding K3CColor}">
+            <Button Width="40" Height="40" Margin="5" Background="{Binding Kca11color}">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" BorderBrush="Black" BorderThickness="1" CornerRadius="24">
@@ -224,7 +224,7 @@
                 </Button.Content>
             </Button>
             <!-- K(3) -->
-            <Button Width="40" Height="40" Margin="5" Background="{Binding K3CColor}">
+            <Button Width="40" Height="40" Margin="5" Background="{Binding K3color}">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" BorderBrush="Black" BorderThickness="1" CornerRadius="24">

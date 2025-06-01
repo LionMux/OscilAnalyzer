@@ -1,17 +1,17 @@
 ﻿using COMTRADE_parser;
-using COMTRADE_parser.MathMetod;
-using ComtradeParser;
 using Prism.Commands;
 using Prism.Ioc;
 using Prism.Mvvm;
 using Prism.Regions;
 using ScottPlot;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace OscilAnalyzer
 {
@@ -31,6 +31,17 @@ namespace OscilAnalyzer
         private int _numOfPer;
         private bool _fourieAnalizeF = true;
 
+        private Brush _k3color;
+        private Brush _kab2color;
+        private Brush _kbc2color;
+        private Brush _kca2color;
+        private Brush _ka1color;
+        private Brush _kb1color;
+        private Brush _kc1color;
+        private Brush _kab11color;
+        private Brush _kbc11color;
+        private Brush _kca11color;
+
         private readonly IRegionManager _regionManager;
         private readonly SignalDataService _signalDataService;
         private FourieAnalizer _fourieAnalizerI;
@@ -45,11 +56,10 @@ namespace OscilAnalyzer
         public List<Complex> FourieUB { get => _fourieUB; set => _fourieUB = value; }
         public List<Complex> FourieUC { get => _fourieUC; set => _fourieUC = value; }
 
-
         public int NumOfPoints { get => _numOfPoints; set => _numOfPoints = value; }
         public int NumOfPer { get => _numOfPer; set => _numOfPer = value; }
         public int NumOfPointsForVD { get => _numOfPointsForVD; set => SetProperty(ref _numOfPointsForVD, value); }
-        public bool FourieAnalizeF { get => _fourieAnalizeF; set => SetProperty(ref _fourieAnalizeF,value); }
+        public bool FourieAnalizeF { get => _fourieAnalizeF; set => SetProperty(ref _fourieAnalizeF, value); }
         public DelegateCommand StartAnalizeFourie { get; set; }
         public DelegateCommand StartAnalizeTypeOfFault { get; set; }
         public DelegateCommand MoveToBackCommand { get; }
@@ -60,7 +70,7 @@ namespace OscilAnalyzer
             get => _timeForVD;
             set
             {
-                if (SetProperty(ref _timeForVD, value) || value <= NumOfPoints-NumOfPer)
+                if (SetProperty(ref _timeForVD, value) || value <= NumOfPoints - NumOfPer)
                 {
                     _vectrorPlotter?.UpdatePlot(value);
                 }
@@ -68,16 +78,26 @@ namespace OscilAnalyzer
             }
         }
 
+        public Brush K3color => _typeOfFaultAnalizer?.K3 == true ? Brushes.Yellow : Brushes.Gray;
+        public Brush Kab2color => _typeOfFaultAnalizer?.Kab2 == true ? Brushes.Yellow : Brushes.Gray;
+        public Brush Kbc2color => _typeOfFaultAnalizer?.Kbc2 == true ? Brushes.Yellow : Brushes.Gray;
+        public Brush Kca2color => _typeOfFaultAnalizer?.Kca2 == true ? Brushes.Yellow : Brushes.Gray;
+        public Brush Ka1color => _typeOfFaultAnalizer?.Ka1 == true ? Brushes.Yellow : Brushes.Gray;
+        public Brush Kb1color => _typeOfFaultAnalizer?.Kb1 == true ? Brushes.Yellow : Brushes.Gray;
+        public Brush Kc1color => _typeOfFaultAnalizer?.Kc1 == true ? Brushes.Yellow : Brushes.Gray;
+        public Brush Kab11color => _typeOfFaultAnalizer?.Kab11 == true ? Brushes.Yellow : Brushes.Gray;
+        public Brush Kbc11color => _typeOfFaultAnalizer?.Kbc11 == true ? Brushes.Yellow : Brushes.Gray;
+        public Brush Kca11color => _typeOfFaultAnalizer?.Kca11 == true ? Brushes.Yellow : Brushes.Gray;
 
         public AnalizeOscillogramViewModel(SignalDataService signalDataService, IRegionManager regionManager)
         {
             _signalDataService = signalDataService;
             _regionManager = regionManager;
             StartAnalizeFourie = new DelegateCommand(GetFourieSignals, CanGetFourie);
-            //StartAnalizeTypeOfFault = new DelegateCommand(StartAnalizeTypeFault, CanStartAnalize);
+            StartAnalizeTypeOfFault = new DelegateCommand(StartAnalizeTypeFault);
             MoveToBackCommand = new DelegateCommand(MoveToBack);
         }
-        public void GetFourieSignals()
+        private void GetFourieSignals()
         {
             FourieIA = new List<Complex>();
             FourieIB = new List<Complex>();
@@ -120,7 +140,9 @@ namespace OscilAnalyzer
 
         private void StartAnalizeTypeFault()
         {
-            _typeOfFaultAnalizer = new TypeOfFaultAnalizer(_fourieAnalizerI, _fourieAnalizerU);
+            _typeOfFaultAnalizer = new TypeOfFaultAnalizer(_fourieAnalizerI, _fourieAnalizerU, _numOfPer);
+            _typeOfFaultAnalizer.StartFaultAnalize();
+            CheckOfColorChange();
         }
 
         //public bool CanStartAnalize()
@@ -128,10 +150,23 @@ namespace OscilAnalyzer
         //    return _fourieAnalizeF;
         //}
 
-        public bool CanGetFourie()
+        private void CheckOfColorChange()
         {
-            return _signalDataService.CurrentA.Count != 0 &&
-                    FourieAnalizeF;
+            RaisePropertyChanged(nameof(K3color));
+            RaisePropertyChanged(nameof(Ka1color));
+            RaisePropertyChanged(nameof(Kb1color));
+            RaisePropertyChanged(nameof(Kc1color));
+            RaisePropertyChanged(nameof(Kab2color));
+            RaisePropertyChanged(nameof(Kbc2color));
+            RaisePropertyChanged(nameof(Kca2color));
+            RaisePropertyChanged(nameof(Kab11color));
+            RaisePropertyChanged(nameof(Kbc11color));
+            RaisePropertyChanged(nameof(Kca11color));
+        }
+
+        private bool CanGetFourie()
+        {
+            return _signalDataService.CurrentA.Count != 0;
         }
     }
 }

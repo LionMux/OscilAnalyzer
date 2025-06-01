@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 
-namespace ComtradeParser
+namespace COMTRADE_parser
 {
     internal class FourieAnalizer
     {
@@ -80,13 +80,13 @@ namespace ComtradeParser
             amplitudeA_arr = new double[(_N - _pofPer)];
             double[] angleA_arr = new double[(_N - _pofPer)];
 
-            for (int i = 0; i < (_N - _pofPer); i++)
+            for (int i = 0; i < _N - _pofPer; i++)
             {
 
                 for (int n = 0; n < _pofPer; n++)
                 {
                     fourie_A[n] = 0;
-                    for (int m = i; m < (i + _pofPer); m++)
+                    for (int m = i; m < i + _pofPer; m++)
                     {
                         double mm = m * 2 * Math.PI * n / _pofPer;
                         double N2 = _pofPer / 2;
@@ -96,7 +96,6 @@ namespace ComtradeParser
                 amplitudeA_arr[i] = fourie_A[1].Magnitude;
                 angleA_arr[i] = fourie_A[1].Phase;// -(2 * pi / (PofPer));
                 FourieSignalA[i] = Complex.FromPolarCoordinates(fourie_A[1].Magnitude, fourie_A[1].Phase);
-
             }
             //_________________________________________________________________________________________   
             // простое фурье через два цикла 
@@ -104,12 +103,12 @@ namespace ComtradeParser
             amplitudeB_arr = new double[(_N - _pofPer)];
             double[] angleB_arr = new double[(_N - _pofPer)];
 
-            for (int i = 0; i < (_N - _pofPer); i++)
+            for (int i = 0; i < _N - _pofPer; i++)
             {
                 for (int n = 0; n < _pofPer; n++)
                 {
                     fourie_B[n] = 0;
-                    for (int m = i; m < (i + _pofPer); m++)
+                    for (int m = i; m < i + _pofPer; m++)
                     {
                         double mm = m * 2 * Math.PI * n / _pofPer;
                         double N2 = _pofPer / 2;
@@ -126,12 +125,12 @@ namespace ComtradeParser
             amplitudeC_arr = new double[(_N -_pofPer)];
             double[] angleC_arr = new double[(_N - _pofPer)];
 
-            for (int i = 0; i < (_N - _pofPer); i++)
+            for (int i = 0; i < _N - _pofPer; i++)
             {
                 for (int n = 0; n < _pofPer; n++)
                 {
                     fourie_C[n] = 0;
-                    for (int m = i; m < (i + _pofPer); m++)
+                    for (int m = i; m < i + _pofPer; m++)
                     {
                         double mm = m * 2 * Math.PI * n / _pofPer;
                         double N2 = _pofPer / 2;
@@ -145,7 +144,7 @@ namespace ComtradeParser
 
             double A1_3 = (double)1 / 3;
 
-            for (int i = 0; i < (_N - _pofPer); i++)
+            for (int i = 0; i < _N - _pofPer; i++)
             {
                 Pramaya[i] = A1_3 * (amplitudeA_arr[i] * Complex.Exp(_imagine * angleA_arr[i]) +
                     amplitudeB_arr[i] * Complex.Exp(_imagine * angleB_arr[i]) * _a +

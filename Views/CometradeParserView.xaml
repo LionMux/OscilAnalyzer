@@ -86,6 +86,10 @@
                   SelectedItem="{Binding VoltageCName,Mode=TwoWay}" />
                 </StackPanel>
             </StackPanel>
+            <TextBlock Width="200"
+           Margin="10,0,0,0"
+           VerticalAlignment="Bottom"
+           Text="{Binding CfgFileName}"/>
         </StackPanel>
         <ScrollViewer Grid.Row="0">
             <UniformGrid Rows="6" Columns="1" Height="auto" >
