@@ -23,6 +23,16 @@ namespace OscilAnalyzer
         public AnalizeOscillogramView()
         {
             InitializeComponent();
-        }   
+        }
+
+        private void ProgressBar_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+
+        }
+
+        private void ProgressBar_ValueChanged_1(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+
+        }
     }
 }

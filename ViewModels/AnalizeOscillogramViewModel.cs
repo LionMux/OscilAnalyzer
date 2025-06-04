@@ -6,12 +6,13 @@ using Prism.Regions;
 using ScottPlot;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Media;
 using System.Windows;
+using System.Windows.Media;
 
 namespace OscilAnalyzer
 {
@@ -23,15 +24,23 @@ namespace OscilAnalyzer
         private List<Complex> _fourieUA;
         private List<Complex> _fourieUB;
         private List<Complex> _fourieUC;
+
+        private double _currentARms;
+        private double _currentBRms;
+        private double _currentCRms;
+        private double _voltageARms;
+        private double _voltageBRms;
+        private double _voltageCRms;
+
         private const int _windowMS = 20; // Окно измерения
         private int _totalTimeMS;
         private int _timeForVD;
         private int _numOfPoints;
         private int _numOfPointsForVD;
         private int _numOfPer;
-        private bool _fourieAnalizeF = true;
-        private bool _isLoading;
+        private bool _isLoading = false;
         private bool _notFoundFault;
+        private double _progress;
 
         private readonly IRegionManager _regionManager;
         private readonly SignalDataService _signalDataService;
@@ -47,15 +56,21 @@ namespace OscilAnalyzer
         public List<Complex> FourieUB { get => _fourieUB; set => _fourieUB = value; }
         public List<Complex> FourieUC { get => _fourieUC; set => _fourieUC = value; }
 
+        public double CurrentARms { get => _currentARms; set => SetProperty(ref _currentARms, value); }
+        public double CurrentBRms { get => _currentBRms; set => SetProperty(ref _currentBRms, value); }
+        public double CurrentCRms { get => _currentCRms; set => SetProperty(ref _currentCRms, value); }
+        public double VoltageARms { get => _voltageARms; set => SetProperty(ref _voltageARms, value); }
+        public double VoltageBRms { get => _voltageBRms; set => SetProperty(ref _voltageBRms, value); }
+        public double VoltageCRms { get => _voltageCRms; set => SetProperty(ref _voltageCRms, value); }
+
+        public double Progress { get => _progress; set => SetProperty(ref _progress, value); }
         public int NumOfPoints { get => _numOfPoints; set => _numOfPoints = value; }
         public int NumOfPer { get => _numOfPer; set => _numOfPer = value; }
         public int NumOfPointsForVD { get => _numOfPointsForVD; set => SetProperty(ref _numOfPointsForVD, value); }
-        public bool FourieAnalizeF { get => _fourieAnalizeF; set => SetProperty(ref _fourieAnalizeF, value); }
         public bool IsLoading { get => _isLoading; set => UpdateVisibility(ref _isLoading, value); }
         public bool NotFoundFault { get => _notFoundFault; set => UpdateVisibility(ref _notFoundFault, value); }
         public Visibility LoadingVisibility => IsLoading == true ? Visibility.Visible : Visibility.Collapsed;
         public Visibility MessageAboutFaultVisibility => NotFoundFault == true ? Visibility.Visible : Visibility.Collapsed;
-        //public string MessageAboutFault { get; set; } = "Короткое замыкание не выявлено";
 
         public DelegateCommand StartAnalizeFourie { get; set; }
         public DelegateCommand StartAnalizeTypeOfFault { get; set; }
@@ -70,6 +85,7 @@ namespace OscilAnalyzer
                 if (SetProperty(ref _timeForVD, value) || value <= NumOfPoints - NumOfPer)
                 {
                     _vectrorPlotter?.UpdatePlot(value);
+                    UpdateRmsValues(value);
                 }
                 _timeForVD = value;
             }
@@ -86,11 +102,12 @@ namespace OscilAnalyzer
         public Brush Kbc11color => _typeOfFaultAnalizer?.Kbc11 == true ? Brushes.Yellow : Brushes.Gray;
         public Brush Kca11color => _typeOfFaultAnalizer?.Kca11 == true ? Brushes.Yellow : Brushes.Gray;
 
+
         public AnalizeOscillogramViewModel(SignalDataService signalDataService, IRegionManager regionManager)
         {
             _signalDataService = signalDataService;
             _regionManager = regionManager;
-            StartAnalizeFourie = new DelegateCommand( () => GetFourieSignals(), CanGetFourie);
+            StartAnalizeFourie = new DelegateCommand(() => GetFourieSignals(), CanGetFourie);
             StartAnalizeTypeOfFault = new DelegateCommand(StartAnalizeTypeFault);
             MoveToBackCommand = new DelegateCommand(MoveToBack);
             StartAnalizeFourie.RaiseCanExecuteChanged();
@@ -113,8 +130,8 @@ namespace OscilAnalyzer
                     NumOfPer = _signalDataService.PoOfPer;
                     NumOfPointsForVD = NumOfPoints - NumOfPer - 1;
 
-                    _fourieAnalizerI = new FourieAnalizer(NumOfPoints, NumOfPer, _signalDataService.CurrentA, _signalDataService.CurrentB, _signalDataService.CurrentC);
-                    _fourieAnalizerU = new FourieAnalizer(NumOfPoints, NumOfPer, _signalDataService.VoltageA, _signalDataService.VoltageB, _signalDataService.VoltageC);
+                    _fourieAnalizerI = new FourieAnalizer(NumOfPoints, NumOfPer, _signalDataService.CurrentA, _signalDataService.CurrentB, _signalDataService.CurrentC, progress => Progress = progress);
+                    _fourieAnalizerU = new FourieAnalizer(NumOfPoints, NumOfPer, _signalDataService.VoltageA, _signalDataService.VoltageB, _signalDataService.VoltageC, progress => Progress = progress);
                     _fourieAnalizerI.RunAnalize();
                     _fourieAnalizerU.RunAnalize();
                     FourieIA = _fourieAnalizerI.FourieSignalA.ToList();
@@ -129,7 +146,6 @@ namespace OscilAnalyzer
             finally
             {
                 IsLoading = false;
-                FourieAnalizeF = false;
                 VectorsPlot();
             }
 
@@ -182,6 +198,30 @@ namespace OscilAnalyzer
             RaisePropertyChanged(nameof(Kbc11color));
             RaisePropertyChanged(nameof(Kca11color));
         }
+
+        private void UpdateRmsValues(int index)
+        {
+            if (_fourieAnalizerU.Nulevaya[NumOfPoints - NumOfPer - 1] != 0)
+            {
+                CurrentARms = _fourieIA[index].Magnitude / Math.Sqrt(2);
+                CurrentBRms = _fourieIB[index].Magnitude / Math.Sqrt(2);
+                CurrentCRms = _fourieIC[index].Magnitude / Math.Sqrt(2);
+                VoltageARms = _fourieUA[index].Magnitude / Math.Sqrt(2);
+                VoltageBRms = _fourieUB[index].Magnitude / Math.Sqrt(2);
+                VoltageCRms = _fourieUC[index].Magnitude / Math.Sqrt(2);
+            }
+            else
+            {
+                CurrentARms = 0;
+                CurrentBRms = 0;    
+                CurrentCRms = 0;
+                VoltageARms = 0;
+                VoltageBRms = 0;
+                VoltageCRms = 0;
+            }
+        }
+
+
 
         private bool CanGetFourie()
         {

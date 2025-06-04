@@ -21,6 +21,9 @@ namespace COMTRADE_parser
         private double _w;
         private double _dt;
         private double _periods;
+        private double _currentIteration;
+        private double _fullIteration;
+        private Action<double>? _reportProgress;
 
         private Complex[] fourie_A { get; set; }
         private Complex[] fourie_B { get; set; }
@@ -33,6 +36,7 @@ namespace COMTRADE_parser
         private Complex[] _fourieSignalB;
         private Complex[] _fourieSignalC;
 
+        public double ProgressBar;
         public double[] amplitudeA_arr { get; set; }
         public double[] amplitudeB_arr { get; set; }
         public double[] amplitudeC_arr { get; set; }
@@ -43,7 +47,7 @@ namespace COMTRADE_parser
         public Complex[] FourieSignalB { get => _fourieSignalB; set => _fourieSignalB = value; }
         public Complex[] FourieSignalC { get => _fourieSignalC; set => _fourieSignalC = value; }
 
-        public FourieAnalizer(int N, double _pOfPer, IEnumerable<double> signal_A, IEnumerable<double> signal_B, IEnumerable<double> signal_C)
+        public FourieAnalizer(int N, double _pOfPer, IEnumerable<double> signal_A, IEnumerable<double> signal_B, IEnumerable<double> signal_C, Action<double>? reportProgress = null)
         {
             _pofPer = (int)_pOfPer; // Число точек на период
             _N = N; // Число точек
@@ -56,6 +60,8 @@ namespace COMTRADE_parser
             _w = 2 * Math.PI * _f;        // угловая частота
             _dt = T / _pofPer;       // Шаг дискретизации
             _periods = N / _pofPer;  //число периодов 
+            _reportProgress = reportProgress;
+            _fullIteration = 3 * (_N - _pofPer) * _pofPer * _pofPer + (_N - _pofPer);
 
             Pramaya = new Complex[_N - _pofPer];
             Obratnaya = new Complex[_N - _pofPer];
@@ -90,7 +96,10 @@ namespace COMTRADE_parser
                     {
                         double mm = m * 2 * Math.PI * n / _pofPer;
                         double N2 = _pofPer / 2;
+                        double progress = _currentIteration*100 / _fullIteration;
                         fourie_A[n] += _signalA[m] * Complex.Exp(-_imagine * mm) / N2; // делим не на N, а на N / 2, потому что вторая часть суммы приходится на "зеркало"
+                        _currentIteration++;
+                        _reportProgress?.Invoke(progress);
                     }
                 }
                 amplitudeA_arr[i] = fourie_A[1].Magnitude;
@@ -112,7 +121,10 @@ namespace COMTRADE_parser
                     {
                         double mm = m * 2 * Math.PI * n / _pofPer;
                         double N2 = _pofPer / 2;
+                        double progress = _currentIteration * 100 / _fullIteration;
                         fourie_B[n] = fourie_B[n] + _signalB[m] * Complex.Exp(-_imagine * mm) / N2; // делим не на N, а на N / 2, потому что вторая часть суммы приходится на "зеркало"
+                        _currentIteration++;
+                        _reportProgress?.Invoke(progress);
                     }
                 }
                 amplitudeB_arr[i] = fourie_B[1].Magnitude;
@@ -134,7 +146,10 @@ namespace COMTRADE_parser
                     {
                         double mm = m * 2 * Math.PI * n / _pofPer;
                         double N2 = _pofPer / 2;
+                        double progress = _currentIteration * 100 / _fullIteration;
                         fourie_C[n] = fourie_C[n] + _signalC[m] * Complex.Exp(-_imagine * mm) / N2; // делим не на N, а на N / 2, потому что вторая часть суммы приходится на "зеркало"
+                        _currentIteration++;
+                        _reportProgress?.Invoke(progress);
                     }
                 }
                 amplitudeC_arr[i] = fourie_C[1].Magnitude;
@@ -157,6 +172,9 @@ namespace COMTRADE_parser
                 Nulevaya[i] = A1_3 * (amplitudeA_arr[i] * Complex.Exp(_imagine * angleA_arr[i])
                     + amplitudeB_arr[i] * Complex.Exp(_imagine * angleB_arr[i])
                     + amplitudeC_arr[i] * Complex.Exp(_imagine * angleC_arr[i]));
+                double progress = _currentIteration * 100 / _fullIteration;
+                _currentIteration++;
+                _reportProgress?.Invoke(progress);
             }
         }
     }
