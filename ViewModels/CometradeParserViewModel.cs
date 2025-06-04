@@ -64,20 +64,20 @@ namespace OscilAnalyzer
 
         public CometradeParserViewModel(SignalDataService signalDataService, IRegionManager regionManager)
         {
-            _regionManager = regionManager;
-            _signalDataService = signalDataService;
             SignalALLNames = new List<string?>();
             SignalNames = new List<string?>();
+
+            _regionManager = regionManager;
+            _signalDataService = signalDataService;
             StartRead = new DelegateCommand(ReadSignal);
             SelectSignal = new DelegateCommand(SelectPhaseSignal, CanReadSelectSignal);
-            MoveToNextCommand = new DelegateCommand(MoveToNext);
+            MoveToNextCommand = new DelegateCommand(MoveToNext, CloseMoveToNext);
         }
 
         private void ReadSignal()
         {
             try
             {
-
                 _signalDataService.CurrentA = new List<double>();
                 _signalDataService.CurrentB = new List<double>();
                 _signalDataService.CurrentC = new List<double>();
@@ -99,7 +99,6 @@ namespace OscilAnalyzer
                 SignalALLNames = _analogChanells.Select(x => x?.Name).ToList();
 
                 CLearOldData();
-
 
                 _signalDataService.NumOfPoints = (int)_reader.Config.EndSample;
                 _signalDataService.PoOfPer = (int)(_reader.Config.Rate / _reader.Config.LineFrequency);
@@ -135,6 +134,7 @@ namespace OscilAnalyzer
 
             StopReadSelectSignal = true;
             SelectSignal.RaiseCanExecuteChanged();
+            MoveToNextCommand.RaiseCanExecuteChanged();
         }
 
         private void MoveToNext()
@@ -206,6 +206,11 @@ namespace OscilAnalyzer
             && !StopReadSelectSignal;
         }
 
+        private bool CloseMoveToNext()
+        {
+            return StopReadSelectSignal;
+        }
+
         private void Plot()
         {
             PlotIA = new Plotter(_signalDataService.CurrentA, _signalDataService.TimeValues, CurrentAName, "A");
@@ -214,7 +219,6 @@ namespace OscilAnalyzer
             PlotUA = new Plotter(_signalDataService.VoltageA, _signalDataService.TimeValues, VoltageAName, "V");
             PlotUB = new Plotter(_signalDataService.VoltageB, _signalDataService.TimeValues, VoltageBName, "V");
             PlotUC = new Plotter(_signalDataService.VoltageC, _signalDataService.TimeValues, VoltageCName, "V");
-            
         }
 
         private void UpdateSignal(ref string? field, string? newValue)

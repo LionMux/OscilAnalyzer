@@ -15,7 +15,6 @@ namespace COMTRADE_parser
         private bool _kab11;
         private bool _kbc11;
         private bool _kca11;
-        private bool _existFault;
 
         private int _k3count;
         private int _kab2count;
@@ -27,7 +26,7 @@ namespace COMTRADE_parser
         private int _kab11count;
         private int _kbc11count;
         private int _kca11count;
-        private int _poOfPer;
+        private int _condForRegFault;
 
         private FourieAnalizer _fourieAnalizer_I;
         private FourieAnalizer _fourieAnalizer_U;
@@ -53,7 +52,7 @@ namespace COMTRADE_parser
         public bool Kbc11 { get => _kbc11; set => _kbc11 = value; }
         public bool Kca11 { get => _kca11; set => _kca11 = value; }
 
-        public TypeOfFaultAnalizer(FourieAnalizer fourieAnalizer_I, FourieAnalizer fourieAnalizer_U, int poOfPer)
+        public TypeOfFaultAnalizer(FourieAnalizer fourieAnalizer_I, FourieAnalizer fourieAnalizer_U, int condForRegFault)
         {
             K3 = false;
             Kab2 = false;
@@ -65,9 +64,9 @@ namespace COMTRADE_parser
             Kab11 = false;
             Kbc11 = false;
             Kca11 = false;
-            _poOfPer = poOfPer;
             _fourieAnalizer_I = fourieAnalizer_I;
             _fourieAnalizer_U = fourieAnalizer_U;
+            _condForRegFault = condForRegFault;
 
             z_A = new double[fourieAnalizer_I.FourieSignalA.Length];
             z_B = new double[fourieAnalizer_I.FourieSignalB.Length];
@@ -86,6 +85,7 @@ namespace COMTRADE_parser
         public void StartFaultAnalize()
         {
             ResetFlags();
+            ResetCounters();
             for (int i = 0; i < _fourieAnalizer_I.Pramaya.Length; i++)
             {
                 Complex relationPramayaUandI = _fourieAnalizer_U.Pramaya[i] / _fourieAnalizer_I.Pramaya[i];
@@ -93,7 +93,7 @@ namespace COMTRADE_parser
                 if (_fourieAnalizer_I.Nulevaya[i].Magnitude / _fourieAnalizer_I.Obratnaya[i].Magnitude < 0.1)
                 {
                     TESTFLT2P(i);
-                    TESTFLT3P(i, relationPramayaUandI, relationabsIObratAndPram);
+                    TESTFLT3P(relationPramayaUandI, relationabsIObratAndPram);
                 }
                 else
                 {
@@ -127,42 +127,41 @@ namespace COMTRADE_parser
             }
         }
 
-        public void TESTFLT2P(int i)
+        public void TESTFLT2P(int numPosition)
         {
-            bool conditionForKab2 = 0.5 * z_C[i] > z_A[i] && 0.5 * z_C[i] > z_B[i];
-            bool conditionForKbc2 = 0.5 * z_A[i] > z_B[i] && 0.5 * z_A[i] > z_C[i];
-            bool conditionForKca2 = 0.5 * z_B[i] > z_A[i] && 0.5 * z_B[i] > z_C[i];
+            bool conditionForKab2 = 0.5 * z_C[numPosition] > z_A[numPosition] && 0.5 * z_C[numPosition] > z_B[numPosition];
+            bool conditionForKbc2 = 0.5 * z_A[numPosition] > z_B[numPosition] && 0.5 * z_A[numPosition] > z_C[numPosition];
+            bool conditionForKca2 = 0.5 * z_B[numPosition] > z_A[numPosition] && 0.5 * z_B[numPosition] > z_C[numPosition];
 
             CheckFaultCondition(conditionForKab2, ref _kab2count, ref _kab2);
             CheckFaultCondition(conditionForKbc2, ref _kbc2count, ref _kbc2);
             CheckFaultCondition(conditionForKca2, ref _kca2count, ref _kca2);
         }
-        public void TESTFLT3P(int i, Complex relationPramayaUandI, double relationabsIObratAndPram)
+        public void TESTFLT3P(Complex relationPramayaUandI, double relationabsIObratAndPram)
         {
-            CheckFaultCondition(Math.Abs(relationabsIObratAndPram) < 0.2 &&
-                Math.Abs(relationPramayaUandI.Phase) > ConvertToRadian(30),
-                ref _k3count, ref _k3);
+            CheckFaultCondition(Math.Abs(relationabsIObratAndPram) < 0.2 && Math.Abs(relationPramayaUandI.Phase) > ConvertDegToRadian(30),
+                                ref _k3count, ref _k3);
         }
-        public void TESTFLTOnGround(int i, Complex relationPramayaUandI)
+        public void TESTFLTOnGround(int numPosition, Complex relationPramayaUandI)
         {
-            bool conditionForKa1 = 2 * z_A[i] > z_B[i] && 2 * z_A[i] > z_C[i];
-            bool conditionForKb1 = 2 * z_B[i] > z_A[i] && 2 * z_B[i] > z_C[i];
-            bool conditionForKc1 = 2 * z_C[i] > z_A[i] && 2 * z_C[i] > z_B[i];
-            bool conditionForKab11 = 0.5 * z_C[i] > z_A[i] && 0.5 * z_C[i] > z_B[i];
-            bool conditionForKbc11 = 0.5 * z_A[i] > z_B[i] && 0.5 * z_A[i] > z_C[i];
-            bool conditionForKca11 = 0.5 * z_B[i] > z_A[i] && 0.5 * z_B[i] > z_C[i];
+            bool conditionForKa1 = 2 * z_A[numPosition] < z_B[numPosition] && 2 * z_A[numPosition] < z_C[numPosition];
+            bool conditionForKb1 = 2 * z_B[numPosition] < z_A[numPosition] && 2 * z_B[numPosition] < z_C[numPosition];
+            bool conditionForKc1 = 2 * z_C[numPosition] < z_A[numPosition] && 2 * z_C[numPosition] < z_B[numPosition];
+            bool conditionForKab11 = 0.5 * z_C[numPosition] > z_A[numPosition] && 0.5 * z_C[numPosition] > z_B[numPosition];
+            bool conditionForKbc11 = 0.5 * z_A[numPosition] > z_B[numPosition] && 0.5 * z_A[numPosition] > z_C[numPosition];
+            bool conditionForKca11 = 0.5 * z_B[numPosition] > z_A[numPosition] && 0.5 * z_B[numPosition] > z_C[numPosition];
 
-            if (relationPramayaUandI.Phase > ConvertToRadian(-60) && relationPramayaUandI.Phase < ConvertToRadian(60))
+            if (relationPramayaUandI.Phase > ConvertDegToRadian(-60) && relationPramayaUandI.Phase < ConvertDegToRadian(60))
             {
                 CheckFaultCondition(conditionForKa1, ref _ka1count, ref _ka1);
                 CheckFaultCondition(conditionForKbc11, ref _kbc11count, ref _kbc11);
             }
-            else if (relationPramayaUandI.Phase > ConvertToRadian(60) && relationPramayaUandI.Phase < ConvertToRadian(180))
+            else if (relationPramayaUandI.Phase > ConvertDegToRadian(60) && relationPramayaUandI.Phase < ConvertDegToRadian(180))
             {
                 CheckFaultCondition(conditionForKc1, ref _kc1count, ref _kc1);
                 CheckFaultCondition(conditionForKab11, ref _kab11count, ref _kab11);
             }
-            else if (relationPramayaUandI.Phase > ConvertToRadian(-180) && relationPramayaUandI.Phase < ConvertToRadian(-60))
+            else if (relationPramayaUandI.Phase > ConvertDegToRadian(-180) && relationPramayaUandI.Phase < ConvertDegToRadian(-60))
             {
                 CheckFaultCondition(conditionForKb1, ref _kb1count, ref _kb1);
                 CheckFaultCondition(conditionForKca11, ref _kca11count, ref _kca11);
@@ -173,7 +172,7 @@ namespace COMTRADE_parser
             if (condition)
             {
                 counter++;
-                if (counter >= _poOfPer)
+                if (counter >= _condForRegFault)
                 {
                     faultFlag = true;
                 }
@@ -184,10 +183,11 @@ namespace COMTRADE_parser
             }
         }
 
-        private double ConvertToRadian(double deg)
+        private double ConvertDegToRadian(double deg)
         {
             return deg * Math.PI / 180;
         }
+
         private void ResetCounters()
         {
             _k3count = 0;
