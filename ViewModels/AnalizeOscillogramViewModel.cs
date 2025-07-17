@@ -82,14 +82,16 @@ namespace OscilAnalyzer
             get => _timeForVD;
             set
             {
-                if (SetProperty(ref _timeForVD, value) || value <= NumOfPoints - NumOfPer)
+                if (SetProperty(ref _timeForVD, value) && value <= NumOfPoints - NumOfPer - 1)
                 {
                     _vectrorPlotter?.UpdatePlot(value);
-                    UpdateRmsValues(value);
+                    _timeForVD = (int)_signalDataService.TimeValues[value];
+                    //UpdateRmsValues(value);
                 }
-                _timeForVD = value;
+                BoundaryConditionForPlotterVD(value);
             }
         }
+
 
         public Brush K3color => _typeOfFaultAnalizer?.K3 == true ? Brushes.Yellow : Brushes.Gray;
         public Brush Kab2color => _typeOfFaultAnalizer?.Kab2 == true ? Brushes.Yellow : Brushes.Gray;
@@ -128,7 +130,7 @@ namespace OscilAnalyzer
 
                     NumOfPoints = _signalDataService.NumOfPoints;
                     NumOfPer = _signalDataService.PoOfPer;
-                    NumOfPointsForVD = NumOfPoints - NumOfPer - 1;
+                    NumOfPointsForVD = (int)_signalDataService.TimeValues[NumOfPoints - NumOfPer - 1];
 
                     _fourieAnalizerI = new FourieAnalizer(NumOfPoints, NumOfPer, _signalDataService.CurrentA, _signalDataService.CurrentB, _signalDataService.CurrentC, progress => Progress = progress);
                     _fourieAnalizerU = new FourieAnalizer(NumOfPoints, NumOfPer, _signalDataService.VoltageA, _signalDataService.VoltageB, _signalDataService.VoltageC, progress => Progress = progress);
@@ -199,27 +201,27 @@ namespace OscilAnalyzer
             RaisePropertyChanged(nameof(Kca11color));
         }
 
-        private void UpdateRmsValues(int index)
-        {
-            if (_fourieAnalizerU.Nulevaya[NumOfPoints - NumOfPer - 1] != 0)
-            {
-                CurrentARms = _fourieIA[index].Magnitude / Math.Sqrt(2);
-                CurrentBRms = _fourieIB[index].Magnitude / Math.Sqrt(2);
-                CurrentCRms = _fourieIC[index].Magnitude / Math.Sqrt(2);
-                VoltageARms = _fourieUA[index].Magnitude / Math.Sqrt(2);
-                VoltageBRms = _fourieUB[index].Magnitude / Math.Sqrt(2);
-                VoltageCRms = _fourieUC[index].Magnitude / Math.Sqrt(2);
-            }
-            else
-            {
-                CurrentARms = 0;
-                CurrentBRms = 0;    
-                CurrentCRms = 0;
-                VoltageARms = 0;
-                VoltageBRms = 0;
-                VoltageCRms = 0;
-            }
-        }
+        //private void UpdateRmsValues(int index)
+        //{
+        //    if (_fourieAnalizerU.Nulevaya[NumOfPoints - NumOfPer - 1] != 0)
+        //    {
+        //        CurrentARms = _fourieIA[index].Magnitude / Math.Sqrt(2);
+        //        CurrentBRms = _fourieIB[index].Magnitude / Math.Sqrt(2);
+        //        CurrentCRms = _fourieIC[index].Magnitude / Math.Sqrt(2);
+        //        VoltageARms = _fourieUA[index].Magnitude / Math.Sqrt(2);
+        //        VoltageBRms = _fourieUB[index].Magnitude / Math.Sqrt(2);
+        //        VoltageCRms = _fourieUC[index].Magnitude / Math.Sqrt(2);
+        //    }
+        //    else
+        //    {
+        //        CurrentARms = 0;
+        //        CurrentBRms = 0;    
+        //        CurrentCRms = 0;
+        //        VoltageARms = 0;
+        //        VoltageBRms = 0;
+        //        VoltageCRms = 0;
+        //    }
+        //}
 
 
 
@@ -240,6 +242,17 @@ namespace OscilAnalyzer
             else
             {
                 NotFoundFault = false;
+            }
+        }
+        private void BoundaryConditionForPlotterVD(int value)
+        {
+            if (value > _signalDataService.TimeValues.Count)
+            {
+                _timeForVD = (int)_signalDataService.TimeValues[^1];
+            }
+            else if (value <= 0)
+            {
+                _timeForVD = 0;
             }
         }
     }

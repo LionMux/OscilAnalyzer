@@ -88,7 +88,7 @@ namespace OscilAnalyzer
 
                 if (!OpenCfgDialog())
                 {
-                    MessageBox.Show("Для правильной работы программы необходимо прочитать осциллограмму",
+                    MessageBox.Show("Для правильной работы программы необходимо считать осциллограмму",
                                   "Предупреждение",
                                   MessageBoxButton.OK,
                                   MessageBoxImage.Warning);
