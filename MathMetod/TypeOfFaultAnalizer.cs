@@ -28,8 +28,10 @@ namespace COMTRADE_parser
         private int _kca11count;
         private int _condForRegFault;
 
-        private FourieAnalizer _fourieAnalizer_I;
-        private FourieAnalizer _fourieAnalizer_U;
+        private ISignalAnalizer _analizer_I;
+        private ISignalAnalizer _analizer_U;
+        private SymmetricalComponentsCalculator _symmetricalComponentsI;
+        private SymmetricalComponentsCalculator _symmetricalComponentsU;
 
         private Complex[] current_A;
         private Complex[] current_B;
@@ -52,7 +54,8 @@ namespace COMTRADE_parser
         public bool Kbc11 { get => _kbc11; set => _kbc11 = value; }
         public bool Kca11 { get => _kca11; set => _kca11 = value; }
 
-        public TypeOfFaultAnalizer(FourieAnalizer fourieAnalizer_I, FourieAnalizer fourieAnalizer_U, int condForRegFault)
+        public TypeOfFaultAnalizer(ISignalAnalizer Analizer_I, ISignalAnalizer Analizer_U,
+            SymmetricalComponentsCalculator SymmetricalComponentsI, SymmetricalComponentsCalculator SymmetricalComponentsU, int condForRegFault)
         {
             K3 = false;
             Kab2 = false;
@@ -64,20 +67,22 @@ namespace COMTRADE_parser
             Kab11 = false;
             Kbc11 = false;
             Kca11 = false;
-            _fourieAnalizer_I = fourieAnalizer_I;
-            _fourieAnalizer_U = fourieAnalizer_U;
+            _analizer_I = Analizer_I;
+            _analizer_U = Analizer_U;
+            _symmetricalComponentsI = SymmetricalComponentsI;
+            _symmetricalComponentsU = SymmetricalComponentsU;
             _condForRegFault = condForRegFault;
 
-            z_A = new double[fourieAnalizer_I.FourieSignalA.Length];
-            z_B = new double[fourieAnalizer_I.FourieSignalB.Length];
-            z_C = new double[fourieAnalizer_I.FourieSignalC.Length];
+            z_A = new double[Analizer_I.ProcessedSignalA.Length];
+            z_B = new double[Analizer_I.ProcessedSignalB.Length];
+            z_C = new double[Analizer_I.ProcessedSignalC.Length];
 
-            current_A = fourieAnalizer_I.FourieSignalA;
-            current_B = fourieAnalizer_I.FourieSignalB;
-            current_C = fourieAnalizer_I.FourieSignalC;
-            voltage_A = fourieAnalizer_U.FourieSignalA;
-            voltage_B = fourieAnalizer_U.FourieSignalB;
-            voltage_C = fourieAnalizer_U.FourieSignalC;
+            current_A = Analizer_I.ProcessedSignalA;
+            current_B = Analizer_I.ProcessedSignalB;
+            current_C = Analizer_I.ProcessedSignalC;
+            voltage_A = Analizer_U.ProcessedSignalA;
+            voltage_B = Analizer_U.ProcessedSignalB;
+            voltage_C = Analizer_U.ProcessedSignalC;
 
             CalculateImpedance();
         }
@@ -86,11 +91,11 @@ namespace COMTRADE_parser
         {
             ResetFlags();
             ResetCounters();
-            for (int i = 0; i < _fourieAnalizer_I.Pramaya.Length; i++)
+            for (int i = 0; i < _symmetricalComponentsI.Pramaya.Length; i++)
             {
-                Complex relationPramayaUandI = _fourieAnalizer_U.Pramaya[i] / _fourieAnalizer_I.Pramaya[i];
-                double relationabsIObratAndPram = _fourieAnalizer_I.Obratnaya[i].Magnitude / _fourieAnalizer_I.Pramaya[i].Magnitude;
-                if (_fourieAnalizer_I.Nulevaya[i].Magnitude / _fourieAnalizer_I.Obratnaya[i].Magnitude < 0.1)
+                Complex relationPramayaUandI = _symmetricalComponentsU.Pramaya[i] / _symmetricalComponentsI.Pramaya[i];
+                double relationabsIObratAndPram = _symmetricalComponentsI.Obratnaya[i].Magnitude / _symmetricalComponentsI.Pramaya[i].Magnitude;
+                if (_symmetricalComponentsI.Nulevaya[i].Magnitude / _symmetricalComponentsI.Obratnaya[i].Magnitude < 0.1)
                 {
                     TESTFLT2P(i);
                     TESTFLT3P(relationPramayaUandI, relationabsIObratAndPram);

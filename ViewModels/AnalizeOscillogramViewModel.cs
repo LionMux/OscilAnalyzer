@@ -10,12 +10,12 @@ namespace OscilAnalyzer
 {
     public class AnalizeOscillogramViewModel : BindableBase
     {
-        private List<Complex> _fourieIA;
-        private List<Complex> _fourieIB;
-        private List<Complex> _fourieIC;
-        private List<Complex> _fourieUA;
-        private List<Complex> _fourieUB;
-        private List<Complex> _fourieUC;
+        private List<Complex> _processedSignalIA;
+        private List<Complex> _processedSignalIB;
+        private List<Complex> _processedSignalIC;
+        private List<Complex> _processedSignalUA;
+        private List<Complex> _processedSignalUB;
+        private List<Complex> _processedSignalUC;
 
         private List<double> _currentARms;
         private List<double> _currentBRms;
@@ -56,19 +56,21 @@ namespace OscilAnalyzer
 
         private readonly IRegionManager _regionManager;
         private readonly SignalDataService _signalDataService;
-        private FourieAnalizer _fourieAnalizerI;
-        private FourieAnalizer _fourieAnalizerU;
+        private ISignalAnalizer _analizerI;
+        private ISignalAnalizer _analizerU;
         private TypeOfFaultAnalizer _typeOfFaultAnalizer;
         private VectorPlotter _currentVectrorsPlotter;
         private VectorPlotter _voltageVectrorsPlotter;
         private RmsCalculator _rmsCalculator;
+        private SymmetricalComponentsCalculator _symmetricalComponentsCalculatorI;
+        private SymmetricalComponentsCalculator _symmetricalComponentsCalculatorU;
 
-        public List<Complex> FourieIA { get => _fourieIA; set => _fourieIA = value; }
-        public List<Complex> FourieIB { get => _fourieIB; set => _fourieIB = value; }
-        public List<Complex> FourieIC { get => _fourieIC; set => _fourieIC = value; }
-        public List<Complex> FourieUA { get => _fourieUA; set => _fourieUA = value; }
-        public List<Complex> FourieUB { get => _fourieUB; set => _fourieUB = value; }
-        public List<Complex> FourieUC { get => _fourieUC; set => _fourieUC = value; }
+        public List<Complex> ProcessedSignalIA { get => _processedSignalIA; set => _processedSignalIA = value; }
+        public List<Complex> ProcessedSignalIB { get => _processedSignalIB; set => _processedSignalIB = value; }
+        public List<Complex> ProcessedSignalIC { get => _processedSignalIC; set => _processedSignalIC = value; }
+        public List<Complex> ProcessedSignalUA { get => _processedSignalUA; set => _processedSignalUA = value; }
+        public List<Complex> ProcessedSignalUB { get => _processedSignalUB; set => _processedSignalUB = value; }
+        public List<Complex> ProcessedSignalUC { get => _processedSignalUC; set => _processedSignalUC = value; }
 
         public double CurrentARmsNow { get => _currentARmsNow; set => SetProperty(ref _currentARmsNow, value); }
         public double CurrentBRmsNow { get => _currentBRmsNow; set => SetProperty(ref _currentBRmsNow, value); }
@@ -133,61 +135,63 @@ namespace OscilAnalyzer
         {
             _signalDataService = signalDataService;
             _regionManager = regionManager;
-            StartAnalizeFourie = new DelegateCommand(() => GetFourieSignals(), CanGetFourie);
+            StartAnalizeFourie = new DelegateCommand(() => GetProcessedSignals(), CanGetAnalize);
             StartAnalizeTypeOfFault = new DelegateCommand(StartAnalizeTypeFault);
             MoveToBackCommand = new DelegateCommand(MoveToBack);
             StartAnalizeFourie.RaiseCanExecuteChanged();
         }
-        private async Task GetFourieSignals()
+        private async Task GetProcessedSignals()
         {
             try
             {
                 IsLoading = true;
                 await Task.Run(() =>
                 {
-                    FourieIA = new List<Complex>();
-                    FourieIB = new List<Complex>();
-                    FourieIC = new List<Complex>();
-                    FourieUA = new List<Complex>();
-                    FourieUB = new List<Complex>();
-                    FourieUC = new List<Complex>();
+                    ProcessedSignalIA = new List<Complex>();
+                    ProcessedSignalIB = new List<Complex>();
+                    ProcessedSignalIC = new List<Complex>();
+                    ProcessedSignalUA = new List<Complex>();
+                    ProcessedSignalUB = new List<Complex>();
+                    ProcessedSignalUC = new List<Complex>();
 
                     NumOfPoints = _signalDataService.NumOfPoints;
                     NumOfPer = _signalDataService.PoOfPer;
                     NumOfPointsForVD = (int)_signalDataService.TimeValues[NumOfPoints - NumOfPer - 1];
 
-                    _fourieAnalizerI = new FourieAnalizer(NumOfPoints, NumOfPer, _signalDataService.CurrentA, _signalDataService.CurrentB, _signalDataService.CurrentC, progress => Progress = progress);
-                    _fourieAnalizerU = new FourieAnalizer(NumOfPoints, NumOfPer, _signalDataService.VoltageA, _signalDataService.VoltageB, _signalDataService.VoltageC, progress => Progress = progress);
-                    _fourieAnalizerI.RunAnalize();
-                    _fourieAnalizerU.RunAnalize();
-                    FourieIA = _fourieAnalizerI.FourieSignalA.ToList();
-                    FourieIB = _fourieAnalizerI.FourieSignalB.ToList();
-                    FourieIC = _fourieAnalizerI.FourieSignalC.ToList();
-                    FourieUA = _fourieAnalizerU.FourieSignalA.ToList();
-                    FourieUB = _fourieAnalizerU.FourieSignalB.ToList();
-                    FourieUC = _fourieAnalizerU.FourieSignalC.ToList();
-
+                    _analizerI = new FourieAnalizer(NumOfPoints, NumOfPer, _signalDataService.CurrentA, _signalDataService.CurrentB, _signalDataService.CurrentC, progress => Progress = progress);
+                    _analizerU = new FourieAnalizer(NumOfPoints, NumOfPer, _signalDataService.VoltageA, _signalDataService.VoltageB, _signalDataService.VoltageC, progress => Progress = progress);
+                    _analizerI.RunAnalize();
+                    _analizerU.RunAnalize();
+                    ProcessedSignalIA = _analizerI.ProcessedSignalA.ToList();
+                    ProcessedSignalIB = _analizerI.ProcessedSignalB.ToList();
+                    ProcessedSignalIC = _analizerI.ProcessedSignalC.ToList();
+                    ProcessedSignalUA = _analizerU.ProcessedSignalA.ToList();
+                    ProcessedSignalUB = _analizerU.ProcessedSignalB.ToList();
+                    ProcessedSignalUC = _analizerU.ProcessedSignalC.ToList();
+                    _symmetricalComponentsCalculatorI = new SymmetricalComponentsCalculator(NumOfPoints, NumOfPer, ProcessedSignalIA, ProcessedSignalIB, ProcessedSignalIC);
+                    _symmetricalComponentsCalculatorU = new SymmetricalComponentsCalculator(NumOfPoints, NumOfPer, ProcessedSignalUA, ProcessedSignalUB, ProcessedSignalUC);
                     _rmsCalculator = new RmsCalculator(NumOfPoints, NumOfPer);
+
                     _currentARms = _rmsCalculator.RmsCalculate(_signalDataService.CurrentA).ToList();
                     _currentBRms = _rmsCalculator.RmsCalculate(_signalDataService.CurrentB).ToList();
                     _currentCRms = _rmsCalculator.RmsCalculate(_signalDataService.CurrentC).ToList();
                     _voltageARms = _rmsCalculator.RmsCalculate(_signalDataService.VoltageA).ToList();
                     _voltageBRms = _rmsCalculator.RmsCalculate(_signalDataService.VoltageB).ToList();
                     _voltageCRms = _rmsCalculator.RmsCalculate(_signalDataService.VoltageC).ToList();
-                    _currentPramayaRms = _rmsCalculator.RmsCalculateForComplex(_fourieAnalizerI.Pramaya).ToList();
-                    _currentObratnayaRms = _rmsCalculator.RmsCalculateForComplex(_fourieAnalizerI.Obratnaya).ToList();
-                    _currentNulevayaRms = _rmsCalculator.RmsCalculateForComplex(_fourieAnalizerI.Nulevaya).ToList();
-                    _voltagePramayaRms = _rmsCalculator.RmsCalculateForComplex(_fourieAnalizerU.Pramaya).ToList();
-                    _voltageObratnayaRms = _rmsCalculator.RmsCalculateForComplex(_fourieAnalizerU.Obratnaya).ToList();
-                    _voltageNulevayaRms = _rmsCalculator.RmsCalculateForComplex(_fourieAnalizerU.Nulevaya).ToList();
+                    _currentPramayaRms = _rmsCalculator.RmsCalculateForComplex(_symmetricalComponentsCalculatorI.Pramaya).ToList();
+                    _currentObratnayaRms = _rmsCalculator.RmsCalculateForComplex(_symmetricalComponentsCalculatorI.Obratnaya).ToList();
+                    _currentNulevayaRms = _rmsCalculator.RmsCalculateForComplex(_symmetricalComponentsCalculatorI.Nulevaya).ToList();
+                    _voltagePramayaRms = _rmsCalculator.RmsCalculateForComplex(_symmetricalComponentsCalculatorU.Pramaya).ToList();
+                    _voltageObratnayaRms = _rmsCalculator.RmsCalculateForComplex(_symmetricalComponentsCalculatorU.Obratnaya).ToList();
+                    _voltageNulevayaRms = _rmsCalculator.RmsCalculateForComplex(_symmetricalComponentsCalculatorU.Nulevaya).ToList();
                 });
             }
             finally
             {
                 IsLoading = false;
                 _totalTimeMS = _signalDataService.TimeValues.Count;
-                CurrentVectrorsPlotter = new VectorPlotter(FourieIA, FourieIB, FourieIC, "Векторная диаграмма токов", new[] { "A", "B", "C" });
-                VoltageVectrorsPlotter = new VectorPlotter(FourieUA, FourieUB, FourieUC, "Векторная диаграмма напряжений", new[] { "A", "B", "C" });
+                CurrentVectrorsPlotter = new VectorPlotter(ProcessedSignalIA, ProcessedSignalIB, ProcessedSignalIC, "Векторная диаграмма токов", new[] { "A", "B", "C" });
+                VoltageVectrorsPlotter = new VectorPlotter(ProcessedSignalUA, ProcessedSignalUB, ProcessedSignalUC, "Векторная диаграмма напряжений", new[] { "A", "B", "C" });
             }
 
         }
@@ -202,7 +206,7 @@ namespace OscilAnalyzer
         private void StartAnalizeTypeFault()
         {
             NotFoundFault = false;
-            _typeOfFaultAnalizer = new TypeOfFaultAnalizer(_fourieAnalizerI, _fourieAnalizerU, _numOfPer);
+            _typeOfFaultAnalizer = new TypeOfFaultAnalizer(_analizerI, _analizerU, _symmetricalComponentsCalculatorI, _symmetricalComponentsCalculatorU, _numOfPer);
             _typeOfFaultAnalizer.StartFaultAnalize();
             CheckOfColorChange();
             CheckExistFault();
@@ -236,7 +240,7 @@ namespace OscilAnalyzer
 
 
 
-        private bool CanGetFourie()
+        private bool CanGetAnalize()
         {
             return _signalDataService.CurrentA.Count != 0;
         }

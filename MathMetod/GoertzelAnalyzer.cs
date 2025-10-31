@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace COMTRADE_parser
 {
-    internal class GoertzelAnalyzer
+    internal class GoertzelAnalyzer : ISignalAnalizer
     {
         private Complex _a = new Complex(-0.5, Math.Sqrt(3) / 2);//задаем стандартный фазовый поворот
         private Complex _aa = new Complex(-0.5, -Math.Sqrt(3) / 2);
@@ -50,9 +50,9 @@ namespace COMTRADE_parser
         public Complex[] Pramaya { get => _pramaya; set => _pramaya = value; }
         public Complex[] Obratnaya { get => _obratnaya; set => _obratnaya = value; }
         public Complex[] Nulevaya { get => _nulevaya; set => _nulevaya = value; }
-        public Complex[] GertzelSignalA { get => _gertzelSignalA; set => _gertzelSignalA = value; }
-        public Complex[] GertzelSignalB { get => _gertzelSignalB; set => _gertzelSignalB = value; }
-        public Complex[] GertzelSignalC { get => _gertzelSignalC; set => _gertzelSignalC = value; }
+        public Complex[] ProcessedSignalA { get => _gertzelSignalA; set => _gertzelSignalA = value; }
+        public Complex[] ProcessedSignalB { get => _gertzelSignalB; set => _gertzelSignalB = value; }
+        public Complex[] ProcessedSignalC { get => _gertzelSignalC; set => _gertzelSignalC = value; }
 
         public GoertzelAnalyzer(int N, double _pOfPer, IEnumerable<double> signal_A, IEnumerable<double> signal_B, IEnumerable<double> signal_C, Action<double>? reportProgress = null)
         {
@@ -67,7 +67,7 @@ namespace COMTRADE_parser
             _dt = T / _pofPer;       // Шаг дискретизации
             _periods = N / _pofPer;  //число периодов 
             _reportProgress = reportProgress;
-            //_fullIteration = 3 * (_N - _pofPer) * _pofPer * _pofPer + (_N - _pofPer);
+            _fullIteration = 3 * (_N - _pofPer) * _pofPer + (_N - _pofPer);
             _omega = _pofPer * _f / _N;
             _getzelCoeff = 2 * Math.Cos(2 * Math.PI / _pofPer);
             _w = Complex.Exp(-_imagine * 2 * Math.PI / _pofPer);
@@ -75,16 +75,16 @@ namespace COMTRADE_parser
             Pramaya = new Complex[_N - _pofPer];
             Obratnaya = new Complex[_N - _pofPer];
             Nulevaya = new Complex[_N - _pofPer];
-            GertzelSignalA = new Complex[_N - _pofPer];
-            GertzelSignalB = new Complex[_N - _pofPer];
-            GertzelSignalC = new Complex[_N - _pofPer];
+            ProcessedSignalA = new Complex[_N - _pofPer];
+            ProcessedSignalB = new Complex[_N - _pofPer];
+            ProcessedSignalC = new Complex[_N - _pofPer];
         }
 
         public void RunAnalize()
         {
-            GertzelSignalA = GertzelAlgoritm(_signalA);
-            GertzelSignalB = GertzelAlgoritm(_signalB);
-            GertzelSignalC = GertzelAlgoritm(_signalC);
+            ProcessedSignalA = GertzelAlgoritm(_signalA);
+            ProcessedSignalB = GertzelAlgoritm(_signalB);
+            ProcessedSignalC = GertzelAlgoritm(_signalC);
 
         }
 
@@ -112,6 +112,7 @@ namespace COMTRADE_parser
                     {
                         sn[n] = signal[signalIndex] + _getzelCoeff * sn[n - 1] - sn[n - 2];
                     }
+                    double progress = _currentIteration * 100 / _fullIteration;
                     _currentIteration++;
                     _reportProgress?.Invoke(progress);
                 }
