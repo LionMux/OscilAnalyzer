@@ -60,9 +60,11 @@ namespace COMTRADE_parser
             ProcessedSignalA = new Complex[_N - _pofPer];
             ProcessedSignalB = new Complex[_N - _pofPer];
             ProcessedSignalC = new Complex[_N - _pofPer];
+
+            RunAnalize();
         }
 
-        public void RunAnalize()
+        private void RunAnalize()
         {
             for (int i = 0; i < _N; i++)
             {

@@ -19,6 +19,7 @@ namespace COMTRADE_parser
         double _getzelCoeff;
         private int _pofPer;
         private int _N;
+        private int _N2;
         private double[] _signal_Time;
         private double[] _signalA;
         private double[] _signalC;
@@ -71,6 +72,7 @@ namespace COMTRADE_parser
             _omega = _pofPer * _f / _N;
             _getzelCoeff = 2 * Math.Cos(2 * Math.PI / _pofPer);
             _w = Complex.Exp(-_imagine * 2 * Math.PI / _pofPer);
+            _N2 = _pofPer / 2;
 
             Pramaya = new Complex[_N - _pofPer];
             Obratnaya = new Complex[_N - _pofPer];
@@ -78,14 +80,15 @@ namespace COMTRADE_parser
             ProcessedSignalA = new Complex[_N - _pofPer];
             ProcessedSignalB = new Complex[_N - _pofPer];
             ProcessedSignalC = new Complex[_N - _pofPer];
+
+            RunAnalize();
         }
 
-        public void RunAnalize()
+        private void RunAnalize()
         {
             ProcessedSignalA = GertzelAlgoritm(_signalA);
             ProcessedSignalB = GertzelAlgoritm(_signalB);
             ProcessedSignalC = GertzelAlgoritm(_signalC);
-
         }
 
         private Complex[] GertzelAlgoritm(double[] signal)
@@ -116,7 +119,7 @@ namespace COMTRADE_parser
                     _currentIteration++;
                     _reportProgress?.Invoke(progress);
                 }
-                GertzelSignal[i] = sn[_pofPer - 1] - _w * sn[_pofPer - 2];
+                GertzelSignal[i] =  ( sn[_pofPer - 1] - _w * sn[_pofPer - 2] ) / _N2;
             }
 
             return GertzelSignal;

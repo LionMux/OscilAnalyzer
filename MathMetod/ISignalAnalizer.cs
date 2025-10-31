@@ -12,13 +12,5 @@ namespace COMTRADE_parser
         Complex[] ProcessedSignalA { get; set; }
         Complex[] ProcessedSignalB { get; set; }
         Complex[] ProcessedSignalC { get; set; }
-
-        //Complex[] Pramaya { get; set; }
-        //Complex[] Obratnaya { get; set; }
-        //Complex[] Nulevaya { get; set; }
-
-        void RunAnalize();
-
-
     }
 }
