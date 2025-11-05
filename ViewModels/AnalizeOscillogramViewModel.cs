@@ -95,7 +95,7 @@ namespace OscilAnalyzer
         public Visibility LoadingVisibility => IsLoading == true ? Visibility.Visible : Visibility.Collapsed;
         public Visibility MessageAboutFaultVisibility => NotFoundFault == true ? Visibility.Visible : Visibility.Collapsed;
 
-        public DelegateCommand StartAnalizeFourie { get; set; }
+        public DelegateCommand StartAnalizeFourie  { get; set; }
         public DelegateCommand StartAnalizeTypeOfFault { get; set; }
         public DelegateCommand MoveToBackCommand { get; }
 
@@ -160,17 +160,17 @@ namespace OscilAnalyzer
 
                     _analizerI = new GoertzelAnalyzer(NumOfPoints, NumOfPer, _signalDataService.CurrentA, _signalDataService.CurrentB, _signalDataService.CurrentC, progress => Progress = progress);
                     _analizerU = new GoertzelAnalyzer(NumOfPoints, NumOfPer, _signalDataService.VoltageA, _signalDataService.VoltageB, _signalDataService.VoltageC, progress => Progress = progress);
-
                     ProcessedSignalIA = _analizerI.ProcessedSignalA.ToList();
                     ProcessedSignalIB = _analizerI.ProcessedSignalB.ToList();
                     ProcessedSignalIC = _analizerI.ProcessedSignalC.ToList();
                     ProcessedSignalUA = _analizerU.ProcessedSignalA.ToList();
                     ProcessedSignalUB = _analizerU.ProcessedSignalB.ToList();
                     ProcessedSignalUC = _analizerU.ProcessedSignalC.ToList();
+
                     _symmetricalComponentsCalculatorI = new SymmetricalComponentsCalculator(NumOfPoints, NumOfPer, ProcessedSignalIA, ProcessedSignalIB, ProcessedSignalIC);
                     _symmetricalComponentsCalculatorU = new SymmetricalComponentsCalculator(NumOfPoints, NumOfPer, ProcessedSignalUA, ProcessedSignalUB, ProcessedSignalUC);
-                    _rmsCalculator = new RmsCalculator(NumOfPoints, NumOfPer);
 
+                    _rmsCalculator = new RmsCalculator(NumOfPoints, NumOfPer);
                     _currentARms = _rmsCalculator.RmsCalculate(_signalDataService.CurrentA).ToList();
                     _currentBRms = _rmsCalculator.RmsCalculate(_signalDataService.CurrentB).ToList();
                     _currentCRms = _rmsCalculator.RmsCalculate(_signalDataService.CurrentC).ToList();

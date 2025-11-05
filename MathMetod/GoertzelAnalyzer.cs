@@ -10,8 +10,6 @@ namespace COMTRADE_parser
 {
     internal class GoertzelAnalyzer : ISignalAnalizer
     {
-        private Complex _a = new Complex(-0.5, Math.Sqrt(3) / 2);//задаем стандартный фазовый поворот
-        private Complex _aa = new Complex(-0.5, -Math.Sqrt(3) / 2);
         private Complex _imagine = new Complex(0, 1);
         double T = 0.02; //Период
         private double _requireFreq;
@@ -32,14 +30,6 @@ namespace COMTRADE_parser
         private double _currentIteration;
         private double _fullIteration;
         private Action<double>? _reportProgress;
-
-        //private Complex[] gertzel_A { get; set; }
-        //private Complex[] gertzel_B { get; set; }
-        //private Complex[] gertzel_C { get; set; }
-
-        private Complex[] _pramaya;
-        private Complex[] _obratnaya;
-        private Complex[] _nulevaya;
         private Complex[] _gertzelSignalA;
         private Complex[] _gertzelSignalB;
         private Complex[] _gertzelSignalC;
@@ -48,9 +38,6 @@ namespace COMTRADE_parser
         public double[] amplitudeA_arr { get; set; }
         public double[] amplitudeB_arr { get; set; }
         public double[] amplitudeC_arr { get; set; }
-        public Complex[] Pramaya { get => _pramaya; set => _pramaya = value; }
-        public Complex[] Obratnaya { get => _obratnaya; set => _obratnaya = value; }
-        public Complex[] Nulevaya { get => _nulevaya; set => _nulevaya = value; }
         public Complex[] ProcessedSignalA { get => _gertzelSignalA; set => _gertzelSignalA = value; }
         public Complex[] ProcessedSignalB { get => _gertzelSignalB; set => _gertzelSignalB = value; }
         public Complex[] ProcessedSignalC { get => _gertzelSignalC; set => _gertzelSignalC = value; }
@@ -74,9 +61,6 @@ namespace COMTRADE_parser
             _w = Complex.Exp(-_imagine * 2 * Math.PI / _pofPer);
             _N2 = _pofPer / 2;
 
-            Pramaya = new Complex[_N - _pofPer];
-            Obratnaya = new Complex[_N - _pofPer];
-            Nulevaya = new Complex[_N - _pofPer];
             ProcessedSignalA = new Complex[_N - _pofPer];
             ProcessedSignalB = new Complex[_N - _pofPer];
             ProcessedSignalC = new Complex[_N - _pofPer];
