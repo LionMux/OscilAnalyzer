@@ -158,8 +158,8 @@ namespace OscilAnalyzer
                     NumOfPer = _signalDataService.PoOfPer;
                     NumOfPointsForVD = (int)_signalDataService.TimeValues[NumOfPoints - NumOfPer - 1];
 
-                    _analizerI = new GoertzelAnalyzer(NumOfPoints, NumOfPer, _signalDataService.CurrentA, _signalDataService.CurrentB, _signalDataService.CurrentC, progress => Progress = progress);
-                    _analizerU = new GoertzelAnalyzer(NumOfPoints, NumOfPer, _signalDataService.VoltageA, _signalDataService.VoltageB, _signalDataService.VoltageC, progress => Progress = progress);
+                    _analizerI = new FourieAnalizer(NumOfPoints, NumOfPer, _signalDataService.CurrentA, _signalDataService.CurrentB, _signalDataService.CurrentC, progress => Progress = progress);
+                    _analizerU = new FourieAnalizer(NumOfPoints, NumOfPer, _signalDataService.VoltageA, _signalDataService.VoltageB, _signalDataService.VoltageC, progress => Progress = progress);
                     ProcessedSignalIA = _analizerI.ProcessedSignalA.ToList();
                     ProcessedSignalIB = _analizerI.ProcessedSignalB.ToList();
                     ProcessedSignalIC = _analizerI.ProcessedSignalC.ToList();

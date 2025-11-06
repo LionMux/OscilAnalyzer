@@ -29,6 +29,10 @@ namespace COMTRADE_parser
         private double _periods;
         private double _currentIteration;
         private double _fullIteration;
+        private double _phaseRow;
+        private double _timeOffset;
+        private double _phaseForCorrect;
+        private double _phaseCorrected;
         private Action<double>? _reportProgress;
         private Complex[] _gertzelSignalA;
         private Complex[] _gertzelSignalB;
@@ -82,6 +86,7 @@ namespace COMTRADE_parser
 
             for (int i = 0; i < _N - _pofPer; i++)
             {
+                Complex insertConstant = 0;
                 sn = new double[_pofPer];
                 for (int n = 0; n < _pofPer; n++)
                 {
@@ -103,10 +108,21 @@ namespace COMTRADE_parser
                     _currentIteration++;
                     _reportProgress?.Invoke(progress);
                 }
-                GertzelSignal[i] =  ( sn[_pofPer - 1] - _w * sn[_pofPer - 2] ) / _N2;
+                insertConstant = (sn[_pofPer - 1] - _w * sn[_pofPer - 2]) / _N2;
+
+                GertzelSignal[i] = Complex.FromPolarCoordinates(insertConstant.Magnitude, PhaseCorrect(i, insertConstant));
             }
 
             return GertzelSignal;
+        }
+
+        private double PhaseCorrect(int blockIndex, Complex insertConstant)
+        {
+            _phaseRow = Math.Atan2(insertConstant.Imaginary, insertConstant.Real);
+            _timeOffset = blockIndex * _dt;
+            _phaseForCorrect = _phaseRow - 2.0 * Math.PI * _f * _timeOffset;
+            _phaseCorrected = Math.Atan2(Math.Sin(_phaseForCorrect), Math.Cos(_phaseForCorrect));
+            return _phaseCorrected;
         }
     }
 
