@@ -57,16 +57,7 @@ namespace COMTRADE_parser
         public TypeOfFaultAnalizer(ISignalAnalizer Analizer_I, ISignalAnalizer Analizer_U,
             SymmetricalComponentsCalculator SymmetricalComponentsI, SymmetricalComponentsCalculator SymmetricalComponentsU, int condForRegFault)
         {
-            K3 = false;
-            Kab2 = false;
-            Kbc2 = false;
-            Kca2 = false;
-            Ka1 = false;
-            Kb1 = false;
-            Kc1 = false;
-            Kab11 = false;
-            Kbc11 = false;
-            Kca11 = false;
+            ResetFlags();
             _analizer_I = Analizer_I;
             _analizer_U = Analizer_U;
             _symmetricalComponentsI = SymmetricalComponentsI;
@@ -94,6 +85,7 @@ namespace COMTRADE_parser
             for (int i = 0; i < _symmetricalComponentsI.Pramaya.Length; i++)
             {
                 Complex relationPramayaUandI = _symmetricalComponentsU.Pramaya[i] / _symmetricalComponentsI.Pramaya[i];
+                Complex relationI2andI0 = _symmetricalComponentsI.Obratnaya[i] / _symmetricalComponentsI.Nulevaya[i];
                 double relationabsIObratAndPram = _symmetricalComponentsI.Obratnaya[i].Magnitude / _symmetricalComponentsI.Pramaya[i].Magnitude;
                 if (_symmetricalComponentsI.Nulevaya[i].Magnitude / _symmetricalComponentsI.Obratnaya[i].Magnitude < 0.1)
                 {
@@ -102,7 +94,7 @@ namespace COMTRADE_parser
                 }
                 else
                 {
-                    TESTFLTOnGround(i, relationPramayaUandI);
+                    TESTFLTOnGround(i, relationI2andI0);
                 }
             }
         }
@@ -144,10 +136,10 @@ namespace COMTRADE_parser
         }
         public void TESTFLT3P(Complex relationPramayaUandI, double relationabsIObratAndPram)
         {
-            CheckFaultCondition(Math.Abs(relationabsIObratAndPram) < 0.2 && Math.Abs(relationPramayaUandI.Phase) > ConvertDegToRadian(30),
+            CheckFaultCondition(relationabsIObratAndPram < 0.2 && Math.Abs(relationPramayaUandI.Phase) > ConvertDegToRadian(30) && Math.Abs(relationPramayaUandI.Phase) < ConvertDegToRadian(150),
                                 ref _k3count, ref _k3);
         }
-        public void TESTFLTOnGround(int numPosition, Complex relationPramayaUandI)
+        public void TESTFLTOnGround(int numPosition, Complex relationI2andI0)
         {
             bool conditionForKa1 = 2 * z_A[numPosition] < z_B[numPosition] && 2 * z_A[numPosition] < z_C[numPosition];
             bool conditionForKb1 = 2 * z_B[numPosition] < z_A[numPosition] && 2 * z_B[numPosition] < z_C[numPosition];
@@ -156,17 +148,17 @@ namespace COMTRADE_parser
             bool conditionForKbc11 = 0.5 * z_A[numPosition] > z_B[numPosition] && 0.5 * z_A[numPosition] > z_C[numPosition];
             bool conditionForKca11 = 0.5 * z_B[numPosition] > z_A[numPosition] && 0.5 * z_B[numPosition] > z_C[numPosition];
 
-            if (relationPramayaUandI.Phase > ConvertDegToRadian(-60) && relationPramayaUandI.Phase < ConvertDegToRadian(60))
+            if (relationI2andI0.Phase > ConvertDegToRadian(-60) && relationI2andI0.Phase < ConvertDegToRadian(60))
             {
                 CheckFaultCondition(conditionForKa1, ref _ka1count, ref _ka1);
                 CheckFaultCondition(conditionForKbc11, ref _kbc11count, ref _kbc11);
             }
-            else if (relationPramayaUandI.Phase > ConvertDegToRadian(60) && relationPramayaUandI.Phase < ConvertDegToRadian(180))
+            else if (relationI2andI0.Phase > ConvertDegToRadian(60) && relationI2andI0.Phase < ConvertDegToRadian(180))
             {
                 CheckFaultCondition(conditionForKc1, ref _kc1count, ref _kc1);
                 CheckFaultCondition(conditionForKab11, ref _kab11count, ref _kab11);
             }
-            else if (relationPramayaUandI.Phase > ConvertDegToRadian(-180) && relationPramayaUandI.Phase < ConvertDegToRadian(-60))
+            else if (relationI2andI0.Phase > ConvertDegToRadian(-180) && relationI2andI0.Phase < ConvertDegToRadian(-60))
             {
                 CheckFaultCondition(conditionForKb1, ref _kb1count, ref _kb1);
                 CheckFaultCondition(conditionForKca11, ref _kca11count, ref _kca11);

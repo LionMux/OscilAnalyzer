@@ -9,11 +9,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Gemstone.COMTRADE" Version="1.0.129" />
+    <PackageReference Include="Gemstone.Expressions" Version="1.0.129" />
+    <PackageReference Include="Gemstone.Numeric" Version="1.0.129" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
     <PackageReference Include="Prism.Unity" Version="8.1.97" />
     <PackageReference Include="Prism.Wpf" Version="8.1.97" />
     <PackageReference Include="ScottPlot" Version="5.0.55" />
     <PackageReference Include="ScottPlot.WPF" Version="5.0.55" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ComtradeParser\ComtradeParser.csproj" />
   </ItemGroup>
 
 </Project>
