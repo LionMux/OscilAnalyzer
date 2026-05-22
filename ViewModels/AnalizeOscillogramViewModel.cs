@@ -205,7 +205,7 @@ namespace OscilAnalyzer
         private void StartAnalizeTypeFault()
         {
             NotFoundFault = false;
-            _typeOfFaultAnalizer = new TypeOfFaultAnalizer(_analizerI, _analizerU, _symmetricalComponentsCalculatorI, _symmetricalComponentsCalculatorU, _numOfPer);
+            _typeOfFaultAnalizer = new TypeOfFaultAnalizer(_analizerI, _analizerU, _symmetricalComponentsCalculatorI, _symmetricalComponentsCalculatorU, NumOfPer/2);
             _typeOfFaultAnalizer.StartFaultAnalize();
             CheckOfColorChange();
             CheckExistFault();
