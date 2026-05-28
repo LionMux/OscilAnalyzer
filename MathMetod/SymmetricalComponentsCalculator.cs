@@ -34,16 +34,16 @@ namespace COMTRADE_parser
             _processedsignalB = ProcessedSignalB.ToArray();
             _processedsignalC = ProcessedSignalC.ToArray();
 
-            Pramaya = new Complex[_N - _pofPer];
-            Obratnaya = new Complex[_N - _pofPer];
-            Nulevaya = new Complex[_N - _pofPer];
+            Pramaya = new Complex[_N - _pofPer + 1];
+            Obratnaya = new Complex[_N - _pofPer + 1];
+            Nulevaya = new Complex[_N - _pofPer + 1];
 
             GetSymmetricalComponents();
         }
 
         public void GetSymmetricalComponents()
         {
-            for (int i = 0; i < _N - _pofPer; i++)
+            for (int i = 0; i < _N - _pofPer + 1; i++)
             {
                 Pramaya[i] = A1_3 * (_processedSignalA[i].Magnitude * Complex.Exp(_imagine * _processedSignalA[i].Phase) +
                     _processedsignalB[i].Magnitude * Complex.Exp(_imagine * _processedsignalB[i].Phase) * _a +

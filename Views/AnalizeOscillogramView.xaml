@@ -6,9 +6,13 @@
                  xmlns:local="clr-namespace:OscilAnalyzer"
                  xmlns:ScottPlot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
                  xmlns:prism="http://www.codeplex.com/prism"
+                 xmlns:converters="clr-namespace:OscilAnalyzer.Converters"
                  prism:ViewModelLocator.AutoWireViewModel="True"
                  mc:Ignorable="d"
                  d:DesignHeight="500" d:DesignWidth="900">
+    <UserControl.Resources>
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisConverter"/>
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
@@ -16,6 +20,7 @@
             <RowDefinition Height="30"/>
             <RowDefinition Height="auto" />
             <RowDefinition Height="60" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
@@ -75,12 +80,12 @@
                     <Run Text="rms" FontSize="7" FontWeight="Bold" BaselineAlignment="Subscript"/>
                 </TextBlock>
 
-                <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding CurrentPramayaRmsNow, StringFormat=\{0:n2\} А}" HorizontalAlignment="Center" Margin="5"/>
-                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CurrentObratnayaRmsNow, StringFormat=\{0:n2\} А}" HorizontalAlignment="Center" Margin="5"/>
-                <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding CurrentNulevayaRmsNow, StringFormat=\{0:n2\} А}" HorizontalAlignment="Center" Margin="5"/>
-                <TextBlock Grid.Row="2" Grid.Column="3" Text="{Binding CurrentARmsNow, StringFormat=\{0:n2\} А}" HorizontalAlignment="Center" Margin="5" />
-                <TextBlock Grid.Row="2" Grid.Column="4" Text="{Binding CurrentBRmsNow, StringFormat=\{0:n2\} А}" HorizontalAlignment="Center" Margin="5" />
-                <TextBlock Grid.Row="2" Grid.Column="5" Text="{Binding CurrentCRmsNow, StringFormat=\{0:n2\} А}" HorizontalAlignment="Center" Margin="5" />
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding CurrentPramayaRmsNow, StringFormat=\{0:0.00\} А}" HorizontalAlignment="Center" Margin="5"/>
+                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CurrentObratnayaRmsNow, StringFormat=\{0:0.00\} А}" HorizontalAlignment="Center" Margin="5"/>
+                <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding CurrentNulevayaRmsNow, StringFormat=\{0:0.00\} А}" HorizontalAlignment="Center" Margin="5"/>
+                <TextBlock Grid.Row="2" Grid.Column="3" Text="{Binding CurrentARmsNow, StringFormat=\{0:0.00\} А}" HorizontalAlignment="Center" Margin="5" />
+                <TextBlock Grid.Row="2" Grid.Column="4" Text="{Binding CurrentBRmsNow, StringFormat=\{0:0.00\} А}" HorizontalAlignment="Center" Margin="5" />
+                <TextBlock Grid.Row="2" Grid.Column="5" Text="{Binding CurrentCRmsNow, StringFormat=\{0:0.00\} А}" HorizontalAlignment="Center" Margin="5" />
             </Grid>
         </Border>
         <Border Grid.Row="1" Grid.Column="1"
@@ -137,12 +142,12 @@
                     <Run Text="rms" FontSize="7" FontWeight="Bold" BaselineAlignment="Subscript"/>
                 </TextBlock>
 
-                <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding VoltagePramayaRmsNow, StringFormat=\{0:n2\} кВ}" HorizontalAlignment="Center" Margin="5"/>
-                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding VoltageObratnayaRmsNow, StringFormat=\{0:n2\} кВ}" HorizontalAlignment="Center" Margin="5"/>
-                <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding VoltageNulevayaRmsNow, StringFormat=\{0:n2\} кВ}" HorizontalAlignment="Center" Margin="5"/>
-                <TextBlock Grid.Row="2" Grid.Column="3" Text="{Binding VoltageARmsNow, StringFormat=\{0:n2\} кВ}" HorizontalAlignment="Center" Margin="5"/>
-                <TextBlock Grid.Row="2" Grid.Column="4" Text="{Binding VoltageBRmsNow, StringFormat=\{0:n2\} кВ}" HorizontalAlignment="Center" Margin="5"/>
-                <TextBlock Grid.Row="2" Grid.Column="5" Text="{Binding VoltageCRmsNow, StringFormat=\{0:n2\} кВ}" HorizontalAlignment="Center" Margin="5"/>
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding VoltagePramayaRmsNow, StringFormat=\{0:0.00\} кВ}" HorizontalAlignment="Center" Margin="5"/>
+                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding VoltageObratnayaRmsNow, StringFormat=\{0:0.00\} кВ}" HorizontalAlignment="Center" Margin="5"/>
+                <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding VoltageNulevayaRmsNow, StringFormat=\{0:0.00\} кВ}" HorizontalAlignment="Center" Margin="5"/>
+                <TextBlock Grid.Row="2" Grid.Column="3" Text="{Binding VoltageARmsNow, StringFormat=\{0:0.00\} кВ}" HorizontalAlignment="Center" Margin="5"/>
+                <TextBlock Grid.Row="2" Grid.Column="4" Text="{Binding VoltageBRmsNow, StringFormat=\{0:0.00\} кВ}" HorizontalAlignment="Center" Margin="5"/>
+                <TextBlock Grid.Row="2" Grid.Column="5" Text="{Binding VoltageCRmsNow, StringFormat=\{0:0.00\} кВ}" HorizontalAlignment="Center" Margin="5"/>
             </Grid>
         </Border>
         <UniformGrid Height="auto" Grid.Row="0" Grid.Column="0">
@@ -162,9 +167,9 @@
                        VerticalAlignment="Top"
                        Text="мс"/>
             <Slider Width="300"
-                Value="{Binding TimeForVD, Mode=TwoWay}"
+                Value="{Binding SelectedIndex, Mode=TwoWay}"
                 Minimum="0"
-                Maximum="{Binding NumOfPointsForVD}"/>
+                Maximum="{Binding MaxIndex}"/>
         </StackPanel>
         <StackPanel Grid.Row="4" Grid.ColumnSpan="2"
                     Height="50"
@@ -176,7 +181,7 @@
                     Height="30"
                     Width="auto" />
             <Button Command="{Binding StartAnalizeFourie}"
-                    Content="Анализ Фурье" 
+                    Content="Цифровая обработка" 
                     Margin="10"
                     Height="30"
                     Width="auto"/>
@@ -191,7 +196,7 @@
                     HorizontalAlignment="Right"
                     Height="60"
                     Visibility="{Binding LoadingVisibility}">
-            <TextBlock Text="Выполняется преобразование Фурье..."
+            <TextBlock Text="Выполняется алгоритм Герцеля..."
                        Margin="0,10,20,0"
                        VerticalAlignment="Center"/>
             <StackPanel Orientation="Horizontal">
@@ -398,5 +403,32 @@
                 </Button>
             </StackPanel>
         </StackPanel>
+        <StackPanel Grid.Row="5" Grid.ColumnSpan="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    Margin="0,5,0,10">
+            <Button Command="{Binding CalculateDistanceCommand}"
+                    Content="Расчёт расстояния до КЗ"
+                    Margin="5" Height="30" Width="auto"
+                    Padding="10,0"/>
+            <TextBlock Text="{Binding FaultDistanceKm, StringFormat={}{0:0.00} км}"
+                       VerticalAlignment="Center" Margin="15,0,5,0"
+                       FontSize="14" FontWeight="Bold"
+                       Foreground="Green"
+                       Visibility="{Binding DistanceResultVisibility}"/>
+            <TextBlock Text="{Binding DistanceError}"
+                       VerticalAlignment="Center" Margin="5,0"
+                       Foreground="Red"
+                       FontSize="12"
+                       Visibility="{Binding DistanceErrorVisibility}"/>
+            <ProgressBar IsIndeterminate="True" Width="80" Height="10"
+                         Visibility="{Binding DistanceBusyVisibility}"
+                         VerticalAlignment="Center" Margin="10,0,0,0"/>
+            <TextBlock Text="Модель не найдена (ONNX)"
+                       VerticalAlignment="Center" Margin="15,0,5,0"
+                       Foreground="Orange" FontSize="11"
+                       Visibility="{Binding ModelAvailable, Converter={StaticResource InverseBoolToVisConverter}, FallbackValue=Collapsed}"/>
+        </StackPanel>
     </Grid>
 </UserControl>
+

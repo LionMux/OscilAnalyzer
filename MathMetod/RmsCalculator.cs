@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -7,12 +7,9 @@ namespace COMTRADE_parser
 {
     internal class RmsCalculator
     {
-        private int _pOfPer;
-        private int _N;
-        private double _sumSquareValue;
+        private readonly int _pOfPer;
+        private readonly int _N;
         private double[] _rmsSignal;
-        //private List<double> _naturSignal;
-        //private double[] _rmsSignalWindow;
 
         public RmsCalculator(int N, double pOfPer)
         {
@@ -22,19 +19,17 @@ namespace COMTRADE_parser
 
         public double[] RmsCalculate(List<double> signal)
         {
-            _rmsSignal = new double[_N - _pOfPer];
-            for (int i = 0; i < _N - _pOfPer; i++)
+            int resultLength = _N - _pOfPer + 1;
+            _rmsSignal = new double[resultLength];
+
+            for (int i = 0; i < resultLength; i++)
             {
-                for (int n = 0; n < _pOfPer; n++)
+                double sumSquareValue = 0;
+                for (int m = i; m < i + _pOfPer; m++)
                 {
-                    _sumSquareValue = 0;
-                    //_rmsSignalWindow[n] = 0;
-                    for (int m = i; m < i + _pOfPer; m++)
-                    {
-                        _sumSquareValue += signal[m] * signal[m];
-                    }
+                    sumSquareValue += signal[m] * signal[m];
                 }
-                _rmsSignal[i] = Math.Sqrt(_sumSquareValue / _pOfPer);
+                _rmsSignal[i] = Math.Sqrt(sumSquareValue / _pOfPer);
             }
 
             return _rmsSignal;
@@ -43,11 +38,11 @@ namespace COMTRADE_parser
         public double[] RmsCalculateForComplex(IEnumerable<Complex> signal)
         {
             var arr = signal.ToArray();
-            _rmsSignal = new double[_N - _pOfPer];
+            _rmsSignal = new double[arr.Length];
 
-            for (int i = 0; i < signal.ToArray().Length; i++)
+            for (int i = 0; i < arr.Length; i++)
             {
-                _rmsSignal[i] = arr[i].Magnitude/Math.Sqrt(2);
+                _rmsSignal[i] = arr[i].Magnitude / Math.Sqrt(2);
             }
             return _rmsSignal;
         }

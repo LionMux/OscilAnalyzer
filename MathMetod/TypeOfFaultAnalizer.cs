@@ -105,15 +105,15 @@ namespace COMTRADE_parser
             {
                 if (current_A[i].Magnitude == 0)
                 {
-                    z_A[i] = 10 ^ 8;
+                    z_A[i] = 1e8;
                 }
                 else if (current_B[i].Magnitude == 0)
                 {
-                    z_B[i] = 10 ^ 8;
+                    z_B[i] = 1e8;
                 }
                 else if (current_C[i].Magnitude == 0)
                 {
-                    z_C[i] = 10 ^ 8;
+                    z_C[i] = 1e8;
                 }
                 else
                 {

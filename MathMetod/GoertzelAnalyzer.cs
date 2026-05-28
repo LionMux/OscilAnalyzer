@@ -59,15 +59,15 @@ namespace COMTRADE_parser
             _dt = T / _pofPer;       // Шаг дискретизации
             _periods = N / _pofPer;  //число периодов 
             _reportProgress = reportProgress;
-            _fullIteration = 3 * (_N - _pofPer) * _pofPer + (_N - _pofPer);
+            _fullIteration = 3 * (_N - _pofPer + 1) * _pofPer + (_N - _pofPer + 1);
             _omega = _pofPer * _f / _N;
             _getzelCoeff = 2 * Math.Cos(2 * Math.PI / _pofPer);
             _w = Complex.Exp(-_imagine * 2 * Math.PI / _pofPer);
             _N2 = _pofPer / 2;
 
-            ProcessedSignalA = new Complex[_N - _pofPer];
-            ProcessedSignalB = new Complex[_N - _pofPer];
-            ProcessedSignalC = new Complex[_N - _pofPer];
+            ProcessedSignalA = new Complex[_N - _pofPer + 1];
+            ProcessedSignalB = new Complex[_N - _pofPer + 1];
+            ProcessedSignalC = new Complex[_N - _pofPer + 1];
 
             RunAnalize();
         }
@@ -82,9 +82,9 @@ namespace COMTRADE_parser
         private Complex[] GertzelAlgoritm(double[] signal)
         {
             double[] sn;
-            Complex[] GertzelSignal = new Complex[_N - _pofPer];
+            Complex[] GertzelSignal = new Complex[_N - _pofPer + 1];
 
-            for (int i = 0; i < _N - _pofPer; i++)
+            for (int i = 0; i < _N - _pofPer + 1; i++)
             {
                 Complex insertConstant = 0;
                 sn = new double[_pofPer];

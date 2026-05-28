@@ -14,6 +14,7 @@ namespace OscilAnalyzer
         private string _unit;
         private double[] _dataY;
         private double[] _dataX;
+        public string? NameSignal => _nameSignal;
         public WpfPlot PlotControl { get; set; }
 
         /// <summary>

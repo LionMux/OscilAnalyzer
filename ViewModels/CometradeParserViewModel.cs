@@ -33,10 +33,15 @@ namespace OscilAnalyzer
         private Plotter _plotUA;
         private Plotter _plotUB;
         private Plotter _plotUC;
+        private ObservableCollection<Plotter> _additionalPlots;
+        private string? _selectedAdditionalSignal;
+        private List<string?> _availableAdditionalSignals;
         public DelegateCommand StartRead { get; set; }
         public DelegateCommand SelectSignal { get; set; }
         public DelegateCommand SelectCfgFile { get; set; }
         public DelegateCommand MoveToNextCommand { get; set; }
+        public DelegateCommand AddAdditionalSignalCommand { get; set; }
+        public DelegateCommand<Plotter> RemoveAdditionalPlotCommand { get; set; }
 
         private Reader _reader;
         private List<AnalogChannelConfig> _analogChanells;
@@ -60,6 +65,9 @@ namespace OscilAnalyzer
         public Plotter PlotUA { get => _plotUA; set => SetProperty(ref _plotUA, value); }
         public Plotter PlotUB { get => _plotUB; set => SetProperty(ref _plotUB, value); }
         public Plotter PlotUC { get => _plotUC; set => SetProperty(ref _plotUC, value); }
+        public ObservableCollection<Plotter> AdditionalPlots { get => _additionalPlots; set => SetProperty(ref _additionalPlots, value); }
+        public string? SelectedAdditionalSignal { get => _selectedAdditionalSignal; set { SetProperty(ref _selectedAdditionalSignal, value); AddAdditionalSignalCommand?.RaiseCanExecuteChanged(); } }
+        public List<string?> AvailableAdditionalSignals { get => _availableAdditionalSignals; set => SetProperty(ref _availableAdditionalSignals, value); }
         public bool StopReadSelectSignal { get => _stopReadSelectSignal; set => SetProperty(ref _stopReadSelectSignal, value); }
 
         public CometradeParserViewModel(SignalDataService signalDataService, IRegionManager regionManager)
@@ -69,9 +77,13 @@ namespace OscilAnalyzer
             CfgFileName = "";
             _regionManager = regionManager;
             _signalDataService = signalDataService;
+            _additionalPlots = new ObservableCollection<Plotter>();
+            _availableAdditionalSignals = new List<string?>();
             StartRead = new DelegateCommand(ReadSignal);
             SelectSignal = new DelegateCommand(SelectPhaseSignal, CanReadSelectSignal);
             MoveToNextCommand = new DelegateCommand(MoveToNext, CloseMoveToNext);
+            AddAdditionalSignalCommand = new DelegateCommand(AddAdditionalSignal, CanAddAdditionalSignal);
+            RemoveAdditionalPlotCommand = new DelegateCommand<Plotter>(RemoveAdditionalPlot);
         }
 
         private void ReadSignal()
@@ -97,6 +109,7 @@ namespace OscilAnalyzer
                 _reader = new Reader(CfgFileName, DatFileName);
                 _analogChanells = _reader.Config.AnalogChannels;
                 SignalALLNames = _analogChanells.Select(x => x?.Name).ToList();
+                UpdateAvailableAdditionalSignals();
 
                 CLearOldData();
 
@@ -131,6 +144,7 @@ namespace OscilAnalyzer
             FillCurrentAndVoltageSignals();
             _signalDataService.TimeValues = MicrosecondsToMilliseconds(_reader.DataTime);
             Plot();
+            UpdateAvailableAdditionalSignals();
 
             StopReadSelectSignal = true;
             SelectSignal.RaiseCanExecuteChanged();
@@ -156,6 +170,7 @@ namespace OscilAnalyzer
             _signalDataService.VoltageB.Clear();
             _signalDataService.VoltageC.Clear();
             _signalDataService.TimeValues.Clear();
+            AdditionalPlots.Clear();
         }
 
         private void FillCurrentAndVoltageSignals()
@@ -221,12 +236,66 @@ namespace OscilAnalyzer
             PlotUC = new Plotter(_signalDataService.VoltageC, _signalDataService.TimeValues, VoltageCName, "V");
         }
 
+        private bool CanAddAdditionalSignal()
+        {
+            return _reader != null && !string.IsNullOrEmpty(SelectedAdditionalSignal);
+        }
+
+        private void AddAdditionalSignal()
+        {
+            if (_reader == null || string.IsNullOrEmpty(SelectedAdditionalSignal))
+                return;
+
+            int index = _analogChanells.FindIndex(x => x.Name == SelectedAdditionalSignal);
+            if (index < 0)
+                return;
+
+            var data = new List<double>();
+            foreach (var sample in _reader.AnalogData)
+            {
+                data.Add(sample[index]);
+            }
+
+            var channel = _analogChanells[index];
+            var plotter = new Plotter(data, _signalDataService.TimeValues, channel.Name, channel.Unit);
+            AdditionalPlots.Add(plotter);
+            UpdateAvailableAdditionalSignals();
+        }
+
+        private void RemoveAdditionalPlot(Plotter plotter)
+        {
+            if (plotter != null)
+            {
+                AdditionalPlots.Remove(plotter);
+                UpdateAvailableAdditionalSignals();
+            }
+        }
+
+        private void UpdateAvailableAdditionalSignals()
+        {
+            var used = new HashSet<string?>();
+            used.Add(CurrentAName);
+            used.Add(CurrentBName);
+            used.Add(CurrentCName);
+            used.Add(VoltageAName);
+            used.Add(VoltageBName);
+            used.Add(VoltageCName);
+            foreach (var plot in AdditionalPlots)
+                used.Add(plot.NameSignal);
+
+            AvailableAdditionalSignals = SignalALLNames?.Where(x => x != null && !used.Contains(x)).ToList() ?? new List<string?>();
+
+            if (SelectedAdditionalSignal != null && !AvailableAdditionalSignals.Contains(SelectedAdditionalSignal))
+                SelectedAdditionalSignal = null;
+        }
+
         private void UpdateSignal(ref string? field, string? newValue)
         {
             SetProperty(ref field, newValue);
             StopReadSelectSignal = false;
             SelectSignal.RaiseCanExecuteChanged();
             StartRead.RaiseCanExecuteChanged();
+            UpdateAvailableAdditionalSignals();
         }
 
         private bool OpenCfgDialog()

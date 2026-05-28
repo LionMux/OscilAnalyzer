@@ -13,6 +13,8 @@
     <PackageReference Include="Gemstone.Expressions" Version="1.0.129" />
     <PackageReference Include="Gemstone.Numeric" Version="1.0.129" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.*" />
+    <PackageReference Include="System.Memory" Version="4.5.*" />
     <PackageReference Include="Prism.Unity" Version="8.1.97" />
     <PackageReference Include="Prism.Wpf" Version="8.1.97" />
     <PackageReference Include="ScottPlot" Version="5.0.55" />
@@ -21,6 +23,24 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ComtradeParser\ComtradeParser.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Models\best_model.pth">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="fault_distance_infer.py">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="export_onnx.py">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Models\best_model.onnx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Models\scalers.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

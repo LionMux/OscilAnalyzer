@@ -2,6 +2,7 @@
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Regions;
+using System.IO;
 using System.Numerics;
 using System.Windows;
 using System.Windows.Media;
@@ -48,11 +49,16 @@ namespace OscilAnalyzer
         private int _totalTimeMS;
         private int _timeForVD;
         private int _numOfPoints;
-        private int _numOfPointsForVD;
+        private int _maxIndex;
+        private int _selectedIndex;
         private int _numOfPer;
         private bool _isLoading = false;
         private bool _notFoundFault;
         private double _progress;
+        private double? _faultDistanceKm;
+        private bool _isDistanceBusy = false;
+        private string? _distanceError;
+        private bool _modelAvailable;
 
         private readonly IRegionManager _regionManager;
         private readonly SignalDataService _signalDataService;
@@ -89,7 +95,25 @@ namespace OscilAnalyzer
         public double Progress { get => _progress; set => SetProperty(ref _progress, value); }
         public int NumOfPoints { get => _numOfPoints; set => _numOfPoints = value; }
         public int NumOfPer { get => _numOfPer; set => _numOfPer = value; }
-        public int NumOfPointsForVD { get => _numOfPointsForVD; set => SetProperty(ref _numOfPointsForVD, value); }
+        public int MaxIndex { get => _maxIndex; set => SetProperty(ref _maxIndex, value); }
+        public int SelectedIndex
+        {
+            get => _selectedIndex;
+            set
+            {
+                if (value < 0) value = 0;
+                if (value > MaxIndex) value = MaxIndex;
+                if (SetProperty(ref _selectedIndex, value))
+                {
+                    int centerIndex = _selectedIndex + NumOfPer / 2;
+                    _timeForVD = (int)_signalDataService.TimeValues[centerIndex];
+                    RaisePropertyChanged(nameof(TimeForVD));
+                    _currentVectrorsPlotter?.UpdatePlot(_selectedIndex);
+                    _voltageVectrorsPlotter?.UpdatePlot(_selectedIndex);
+                    UpdateRmsValues(_selectedIndex);
+                }
+            }
+        }
         public bool IsLoading { get => _isLoading; set => UpdateVisibility(ref _isLoading, value); }
         public bool NotFoundFault { get => _notFoundFault; set => UpdateVisibility(ref _notFoundFault, value); }
         public Visibility LoadingVisibility => IsLoading == true ? Visibility.Visible : Visibility.Collapsed;
@@ -101,20 +125,16 @@ namespace OscilAnalyzer
 
         public VectorPlotter CurrentVectrorsPlotter { get => _currentVectrorsPlotter; set => SetProperty(ref _currentVectrorsPlotter, value); }
         public VectorPlotter VoltageVectrorsPlotter { get => _voltageVectrorsPlotter; set => SetProperty(ref _voltageVectrorsPlotter, value); }
-        public int TimeForVD
+                public int TimeForVD
         {
             get => _timeForVD;
             set
             {
-                if (SetProperty(ref _timeForVD, value) && value <= NumOfPoints - NumOfPer - 1)
+                int newIndex = FindNearestIndex(value);
+                if (newIndex != _selectedIndex)
                 {
-                    _currentVectrorsPlotter?.UpdatePlot(value);
-                    _voltageVectrorsPlotter?.UpdatePlot(value);
-                    _timeForVD = (int)_signalDataService.TimeValues[value];
-                    UpdateRmsValues(value);
-
+                    SelectedIndex = newIndex;
                 }
-                BoundaryConditionForPlotterVD(value);
             }
         }
 
@@ -130,15 +150,27 @@ namespace OscilAnalyzer
         public Brush Kbc11color => _typeOfFaultAnalizer?.Kbc11 == true ? Brushes.Yellow : Brushes.Gray;
         public Brush Kca11color => _typeOfFaultAnalizer?.Kca11 == true ? Brushes.Yellow : Brushes.Gray;
 
+        public double? FaultDistanceKm { get => _faultDistanceKm; set => SetProperty(ref _faultDistanceKm, value); }
+        public bool IsDistanceBusy { get => _isDistanceBusy; set => UpdateVisibilityDistance(ref _isDistanceBusy, value); }
+        public string? DistanceError { get => _distanceError; set => SetProperty(ref _distanceError, value); }
+        public bool ModelAvailable { get => _modelAvailable; set => SetProperty(ref _modelAvailable, value); }
+        public Visibility DistanceResultVisibility => FaultDistanceKm.HasValue ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility DistanceErrorVisibility => !string.IsNullOrEmpty(DistanceError) ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility DistanceBusyVisibility => IsDistanceBusy ? Visibility.Visible : Visibility.Collapsed;
+
+        public DelegateCommand CalculateDistanceCommand { get; }
+
 
         public AnalizeOscillogramViewModel(SignalDataService signalDataService, IRegionManager regionManager)
         {
             _signalDataService = signalDataService;
             _regionManager = regionManager;
             StartAnalizeFourie = new DelegateCommand(() => GetProcessedSignals(), CanGetAnalize);
-            StartAnalizeTypeOfFault = new DelegateCommand(StartAnalizeTypeFault);
+            StartAnalizeTypeOfFault = new DelegateCommand(StartAnalizeTypeFault, () => _analizerI != null && _analizerU != null);
             MoveToBackCommand = new DelegateCommand(MoveToBack);
+            CalculateDistanceCommand = new DelegateCommand(async () => await CalculateDistance(), () => _signalDataService.CurrentA.Count > 0 && ModelAvailable);
             StartAnalizeFourie.RaiseCanExecuteChanged();
+            CheckModelAvailability();
         }
         private async Task GetProcessedSignals()
         {
@@ -156,10 +188,10 @@ namespace OscilAnalyzer
 
                     NumOfPoints = _signalDataService.NumOfPoints;
                     NumOfPer = _signalDataService.PoOfPer;
-                    NumOfPointsForVD = (int)_signalDataService.TimeValues[NumOfPoints - NumOfPer - 1];
+                    MaxIndex = NumOfPoints - NumOfPer;
 
-                    _analizerI = new GoertzelAnalyzer(NumOfPoints, NumOfPer, _signalDataService.CurrentA, _signalDataService.CurrentB, _signalDataService.CurrentC, progress => Progress = progress);
-                    _analizerU = new GoertzelAnalyzer(NumOfPoints, NumOfPer, _signalDataService.VoltageA, _signalDataService.VoltageB, _signalDataService.VoltageC, progress => Progress = progress);
+                    _analizerI = new GoertzelAnalyzer(NumOfPoints, NumOfPer, _signalDataService.CurrentA, _signalDataService.CurrentB, _signalDataService.CurrentC, progress => Progress = progress * 0.5);
+                    _analizerU = new GoertzelAnalyzer(NumOfPoints, NumOfPer, _signalDataService.VoltageA, _signalDataService.VoltageB, _signalDataService.VoltageC, progress => Progress = 50 + progress * 0.5);
                     ProcessedSignalIA = _analizerI.ProcessedSignalA.ToList();
                     ProcessedSignalIB = _analizerI.ProcessedSignalB.ToList();
                     ProcessedSignalIC = _analizerI.ProcessedSignalC.ToList();
@@ -191,6 +223,7 @@ namespace OscilAnalyzer
                 _totalTimeMS = _signalDataService.TimeValues.Count;
                 CurrentVectrorsPlotter = new VectorPlotter(ProcessedSignalIA, ProcessedSignalIB, ProcessedSignalIC, "Векторная диаграмма токов", new[] { "A", "B", "C" });
                 VoltageVectrorsPlotter = new VectorPlotter(ProcessedSignalUA, ProcessedSignalUB, ProcessedSignalUC, "Векторная диаграмма напряжений", new[] { "A", "B", "C" });
+                StartAnalizeTypeOfFault.RaiseCanExecuteChanged();
             }
 
         }
@@ -223,6 +256,69 @@ namespace OscilAnalyzer
             RaisePropertyChanged(nameof(MessageAboutFaultVisibility));
         }
 
+        private void UpdateVisibilityDistance(ref bool field, bool newValue)
+        {
+            SetProperty(ref field, newValue);
+            RaisePropertyChanged(nameof(DistanceResultVisibility));
+            RaisePropertyChanged(nameof(DistanceErrorVisibility));
+            RaisePropertyChanged(nameof(DistanceBusyVisibility));
+        }
+
+        private void CheckModelAvailability()
+        {
+            var modelDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Models");
+            var onnxPath = Path.Combine(modelDir, "best_model.onnx");
+            var scalersPath = Path.Combine(modelDir, "scalers.json");
+            ModelAvailable = File.Exists(onnxPath) && File.Exists(scalersPath);
+        }
+
+        private async Task CalculateDistance()
+        {
+            try
+            {
+                IsDistanceBusy = true;
+                DistanceError = null;
+                FaultDistanceKm = null;
+
+                var exeDir = AppDomain.CurrentDomain.BaseDirectory;
+                var modelDir = Path.Combine(exeDir, "Models");
+
+                double fsHz;
+                if (_signalDataService.TimeValues.Count >= 2)
+                {
+                    fsHz = 1000.0 / (_signalDataService.TimeValues[1] - _signalDataService.TimeValues[0]);
+                }
+                else
+                {
+                    fsHz = 5000.0;
+                }
+
+                double result = await Task.Run(() =>
+                {
+                    using var model = new FaultDistanceModel(modelDir);
+                    return model.Predict(
+                        _signalDataService.CurrentA.ToArray(),
+                        _signalDataService.CurrentB.ToArray(),
+                        _signalDataService.CurrentC.ToArray(),
+                        _signalDataService.VoltageA.ToArray(),
+                        _signalDataService.VoltageB.ToArray(),
+                        _signalDataService.VoltageC.ToArray(),
+                        fsHz
+                    );
+                });
+
+                FaultDistanceKm = result;
+            }
+            catch (Exception ex)
+            {
+                DistanceError = $"Ошибка расчёта расстояния: {ex.Message}";
+            }
+            finally
+            {
+                IsDistanceBusy = false;
+            }
+        }
+
         private void CheckOfColorChange()
         {
             RaisePropertyChanged(nameof(K3color));
@@ -241,7 +337,7 @@ namespace OscilAnalyzer
 
         private bool CanGetAnalize()
         {
-            return _signalDataService.CurrentA.Count != 0;
+            return _signalDataService.CurrentA.Count != 0 && !IsLoading;
         }
 
         private void CheckExistFault()
@@ -258,19 +354,31 @@ namespace OscilAnalyzer
                 NotFoundFault = false;
             }
         }
-        private void BoundaryConditionForPlotterVD(int value)
+                private int FindNearestIndex(int targetTimeMs)
         {
-            if (value > _signalDataService.TimeValues.Count)
+            if (_signalDataService?.TimeValues == null || _signalDataService.TimeValues.Count == 0)
+                return 0;
+
+            int centerOffset = NumOfPer / 2;
+            double target = targetTimeMs - centerOffset;
+            int closestIndex = 0;
+            double minDiff = Math.Abs(_signalDataService.TimeValues[0] - target);
+
+            for (int i = 1; i < _signalDataService.TimeValues.Count; i++)
             {
-                _timeForVD = (int)_signalDataService.TimeValues[^1];
+                double diff = Math.Abs(_signalDataService.TimeValues[i] - target);
+                if (diff < minDiff)
+                {
+                    minDiff = diff;
+                    closestIndex = i;
+                }
             }
-            else if (value <= 0)
-            {
-                _timeForVD = 0;
-            }
+
+            return Math.Min(closestIndex, MaxIndex);
         }
         private void UpdateRmsValues(int value)
         {
+            if (_currentARms == null || value >= _currentARms.Count) return;
             CurrentARmsNow = _currentARms[value] * 1000;
             CurrentBRmsNow = _currentBRms[value] * 1000;
             CurrentCRmsNow = _currentCRms[value] * 1000;
@@ -286,3 +394,7 @@ namespace OscilAnalyzer
         }
     }
 }
+
+
+
+
