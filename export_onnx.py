@@ -62,47 +62,9 @@ def export(pth_path: str, output_dir: str) -> dict:
         opset_version=14,
     )
 
-    signal_scalers = scalers.get("signal", [])
-    dist_scaler = scalers.get("distance", None)
-
-    signal_means = []
-    signal_stds = []
-    for scaler in signal_scalers:
-        if hasattr(scaler, "mean_"):
-            signal_means.append(float(scaler.mean_[0]))
-            signal_stds.append(float(scaler.scale_[0]))
-        elif hasattr(scaler, "mean"):
-            signal_means.append(float(scaler.mean))
-            signal_stds.append(float(scaler.scale_))
-
-    dist_min = 0.0
-    dist_max = float(cfg.LINE_L_KM) if hasattr(cfg, "LINE_L_KM") else 50.0
-    if dist_scaler is not None:
-        if hasattr(dist_scaler, "data_min_"):
-            dist_min = float(dist_scaler.data_min_[0])
-            dist_max = float(dist_scaler.data_max_[0])
-        elif hasattr(dist_scaler, "min_"):
-            dist_min = float(dist_scaler.min_[0])
-            dist_max = float(dist_scaler.max_[0])
-
-    scalers_out = {
-        "signal_means": signal_means,
-        "signal_stds": signal_stds,
-        "dist_min": dist_min,
-        "dist_max": dist_max,
-        "num_channels": num_ch,
-        "seq_length": seq_len,
-        "normalization_mode": str(getattr(cfg, "NORMALIZATION_MODE", "standard")),
-    }
-
-    scalers_path = output_dir / "scalers.json"
-    with open(scalers_path, "w", encoding="utf-8") as f:
-        json.dump(scalers_out, f, ensure_ascii=False, indent=2)
-
     return {
         "success": True,
         "onnx_path": str(onnx_path),
-        "scalers_path": str(scalers_path),
         "channels": num_ch,
         "seq_length": seq_len,
     }

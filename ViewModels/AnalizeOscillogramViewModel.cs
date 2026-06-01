@@ -1,4 +1,4 @@
-﻿using COMTRADE_parser;
+using COMTRADE_parser;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Regions;
@@ -268,8 +268,7 @@ namespace OscilAnalyzer
         {
             var modelDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Models");
             var onnxPath = Path.Combine(modelDir, "best_model.onnx");
-            var scalersPath = Path.Combine(modelDir, "scalers.json");
-            ModelAvailable = File.Exists(onnxPath) && File.Exists(scalersPath);
+            ModelAvailable = File.Exists(onnxPath);
         }
 
         private async Task CalculateDistance()
@@ -286,6 +285,9 @@ namespace OscilAnalyzer
                 double fsHz;
                 if (_signalDataService.TimeValues.Count >= 2)
                 {
+                    // Время переведено в миллисекунды в CometradeParserViewModel.
+                    // Разница между отсчетами составляет dt мс.
+                    // fsHz = 1000.0 / dt. Например, 1000.0 / 0.5 = 2000 Гц.
                     fsHz = 1000.0 / (_signalDataService.TimeValues[1] - _signalDataService.TimeValues[0]);
                 }
                 else
